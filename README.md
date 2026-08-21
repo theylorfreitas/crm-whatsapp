@@ -133,3 +133,17 @@ para quem não pediu tem o número bloqueado.
 
 O manual ensina a respeitar esses limites porque o contrário custa o seu número,
 e um número bloqueado leva junto a conversa de todos os seus clientes.
+
+---
+
+## Licença
+
+Copyright © 2026 Theylor Freitas. Todos os direitos reservados.
+
+Este código está aberto para leitura, e não é de domínio público. Quem adquire
+a licença pode instalar, modificar e usar no próprio negócio, sem limite de
+contatos nem de tempo. Revender o CRM, redistribuir o código ou publicá-lo em
+outro lugar não está incluído.
+
+Os termos completos estão em **[LICENCA.md](LICENCA.md)**. Para revender, fale
+com theylorrico@gmail.com.

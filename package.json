@@ -2,6 +2,7 @@
   "name": "crm-whatsapp",
   "private": true,
   "version": "1.0.0",
+  "license": "SEE LICENSE IN LICENCA.md",
   "type": "module",
   "scripts": {
     "instalar": "node instalar.mjs",

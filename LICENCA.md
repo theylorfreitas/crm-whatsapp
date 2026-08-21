@@ -1,14 +1,10 @@
 # Licença de uso
 
-> **PARA QUEM VENDE:** troque `[SEU NOME OU EMPRESA]` e `[ANO]` abaixo antes de
-> entregar, e confira os termos com quem cuida do seu jurídico. O texto a seguir
-> é o padrão mais restritivo (todos os direitos reservados, uso interno de um
-> comprador) e serve como ponto de partida, não como parecer jurídico. Apague
-> este aviso depois.
+Copyright © 2026 Theylor Freitas. Todos os direitos reservados.
 
----
-
-Copyright © [ANO] [SEU NOME OU EMPRESA]. Todos os direitos reservados.
+Este código está publicado à vista de todos, e isso não é o mesmo que ser de
+domínio público. Poder ler não é poder revender. O que você pode fazer com ele
+está escrito abaixo, e é só isso.
 
 ## O que você pode fazer
 
@@ -26,13 +22,16 @@ esta licença.
 ## O que você não pode fazer
 
 - **Revender, sublicenciar ou redistribuir** o código, no todo ou em parte, com
-  ou sem modificação.
-- **Publicar** o código em repositório aberto ou em qualquer lugar de acesso
-  público.
-- **Compartilhar** o seu acesso ao repositório com quem não adquiriu a licença.
+  ou sem modificação, de graça ou pago.
+- **Republicar** o código, ou uma versão modificada dele, em repositório,
+  marketplace, curso ou pacote que você distribua.
+- **Remover ou alterar** este arquivo de licença e o aviso de copyright das
+  cópias que você tiver.
 
-Se você quiser revender este CRM para terceiros, isso exige uma licença
-comercial separada. Fale com [SEU CONTATO].
+Vender o atendimento dos seus próprios clientes usando este CRM é uso, e é
+permitido. Vender o CRM em si, ou entregá-lo instalado como produto para
+terceiros, é revenda, e exige uma licença comercial separada.
+Fale com theylorrico@gmail.com.
 
 ## Sobre os serviços de terceiros
 
