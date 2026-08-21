@@ -1,0 +1,2637 @@
+@import "tailwindcss";
+
+/* O tema é decidido pelo app (botão na barra superior), não pelo sistema
+   operacional — por isso `dark:` passa a depender da classe .dark no <html>
+   em vez de prefers-color-scheme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ── Tokens do tema ─────────────────────────────────────────────────────────
+   O app tinha duas escalas paralelas fazendo o MESMO papel: slate nas telas
+   claras e zinc nas escuras. Aqui cada papel ganha um nome só — `canvas`,
+   `surface`, `line`, `ink` — e o valor troca com o tema. Foi isso que
+   permitiu unificar o app inteiro: nenhuma tela decide mais a própria cor.
+
+     canvas      fundo da página
+     surface     cartão, painel, barra — o que se apoia no canvas
+     surface-2   camada acima do surface (hover, cabeçalho de tabela, chip)
+     line        borda padrão · line-soft mais discreta · line-strong mais firme
+     ink         texto principal · ink-2 corpo · ink-3 apoio · ink-4 apagado */
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  /* Versões opacas, pro que flutua sobre a tela: modal e menu suspenso. */
+  --color-surface-solid: var(--surface-solid);
+  --color-canvas-solid: var(--canvas-solid);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+}
+
+/* Os papéis acima deixaram de ser cores chapadas e passaram a ser CAMADAS
+   translúcidas sobre o fundo do app. É isso que faz o vidro existir no app
+   inteiro sem tocar em nenhuma tela: quem escreve `bg-surface` num cartão
+   ganha vidro, porque `surface` virou "branco a 6%" em vez de "#141418".
+
+     app-bg      a cor de baixo de tudo (só o <body> pinta)
+     canvas      rebaixo: campo, poço, bloco recuado — escurece a camada
+     surface     vidro: cartão, painel, barra — clareia e desfoca o fundo
+     surface-2   dentro do vidro: hover, chip, cabeçalho de tabela */
+:root {
+  --app-bg: #f4f5f9;
+  --canvas: rgba(15, 21, 32, 0.045);
+  --surface: rgba(255, 255, 255, 0.7);
+  --surface-2: rgba(15, 21, 32, 0.05);
+  --line: rgba(15, 21, 32, 0.1);
+  --line-soft: rgba(15, 21, 32, 0.055);
+  --line-strong: rgba(15, 21, 32, 0.18);
+  --ink: #0f1520;
+  --ink-2: #3f4a5a;
+  --ink-3: #6b7787;
+  --ink-4: #98a2b1;
+
+  /* Brilho de fundo. `--glow` é sobrescrito no workspace pela cor da marca do
+     cliente, então cada sistema respira a própria cor.
+
+     O PADRÃO é grafite de propósito. O CRM é white label: a cor tem que ser
+     do cliente, e um violeta fixo aqui virava a cor "do sistema", aparecendo
+     no painel e em todo sistema que ainda não escolheu a sua. Neutro, o
+     app não compete com marca nenhuma e quem chega vê a própria.
+
+     A marca do cliente pode ser qualquer cor, inclusive um roxo quase preto.
+     Por isso o brilho não usa a cor crua: `--glow-mix` a traz pra uma faixa
+     que aparece no tema atual, sem trocar o tom. */
+  --glow: #64748b;
+  /* A segunda luz do fundo. Neutra por padrão, pelo mesmo motivo do --glow: o
+     app é white label e não pode ter cor própria em sistema que ainda não escolheu
+     a sua. O OwnerLayout a troca pelo Ultrasonic da CRM. */
+  --glow-2: #4c6ef5;
+  /* No claro o brilho clareia em vez de escurecer: uma cor escura borrada
+     sobre branco vira fumaça cinza, não luz. */
+  --glow-mix: color-mix(in oklab, var(--glow) 62%, #ffffff);
+  --glow-a: 24%;
+  --glow-b: 11%;
+
+  /* Mesma ideia pro texto e ícones na cor da marca: --accent é a cor crua
+     (fundo de botão), --accent-ink é ela já legível sobre o tema.
+
+     Grafite pelo mesmo motivo do --glow: no painel e em sistema sem cor
+     escolhida, o destaque é neutro. Dentro do workspace, WorkspaceLayout
+     sobrescreve com client.primaryColor e tudo passa a ser a cor do cliente. */
+  --accent: #52525b;
+  --accent-ink: color-mix(in oklab, var(--accent) 88%, #000000);
+  /* O que vai ESCRITO EM CIMA da cor da marca (texto e ícone de botão cheio).
+     Branco é só o padrão: dentro do workspace o WorkspaceLayout recalcula pela
+     luminância da cor do cliente, porque marca clara (um amarelo, um lima) com
+     texto branco em cima não se lê. */
+  --sobre-a-marca: #ffffff;
+  /* A cor de PREENCHIMENTO de um botão da marca. No tema claro é a própria
+     cor; no escuro ela é puxada pro claro (ver .dark), senão uma marca
+     escura vira um retângulo sem aresta sobre o fundo escuro. Dentro do
+     workspace o WorkspaceLayout recalcula pela cor do cliente. */
+  --accent-cheio: var(--accent);
+
+  --glass-blur: blur(26px) saturate(165%);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 10px 30px -16px rgba(15, 21, 32, 0.2);
+
+  /* Vidro OPACO, pra diálogo.
+     `--surface` é translúcido de propósito: é a identidade do site, e funciona
+     num painel deitado sobre a página. Num modal não funciona — ele flutua
+     sobre qualquer tela, e um editor de fluxo cheio de caixas coloridas
+     atravessa o vidro e disputa com o texto do formulário. Estas duas são as
+     mesmas cores já achatadas contra o fundo do app: mesmo tom, sem deixar
+     passar o que está atrás. */
+  --surface-solid: #ffffff;
+  --canvas-solid: #f1f2f6;
+}
+
+.dark {
+  color-scheme: dark;
+
+  /* Onyx, da cartela da CRM. Não é #000 de propósito: em tela OLED o preto
+     puro apaga a borda do vidro e os cartões perdem o contorno. */
+  --app-bg: #0c0c0c;
+  --canvas: rgba(0, 0, 0, 0.26);
+  --surface: rgba(255, 255, 255, 0.06);
+  --surface-2: rgba(255, 255, 255, 0.1);
+  --line: rgba(255, 255, 255, 0.12);
+  --line-soft: rgba(255, 255, 255, 0.07);
+  --line-strong: rgba(255, 255, 255, 0.22);
+  /* Lavender (#E2DEEC) no lugar do quase-branco: é o texto da identidade, e o
+     leve desvio pro roxo tira o brilho duro do branco puro em leitura longa.
+     Os apoios descem daí, mantendo o mesmo tom. */
+  --ink: #e2deec;
+  --ink-2: #b9b4c6;
+  --ink-3: #8a8598;
+  --ink-4: #66626f;
+
+  --glow-mix: color-mix(in oklab, var(--glow) 60%, #ffffff);
+  --glow-a: 28%;
+  --glow-b: 15%;
+  --accent-ink: color-mix(in oklab, var(--accent) 56%, #ffffff);
+  --accent-cheio: color-mix(in oklab, var(--accent) 76%, #ffffff);
+
+  /* O fio de luz na borda de cima do vidro puxa a cor da marca.
+     Nas peças da CRM o vidro nunca tem aresta branca neutra: a borda pega a
+     luz roxa que atravessa a cena. Como sai de `--accent`, cada workspace pega
+     a cor do PRÓPRIO cliente — o efeito é da casa, a cor é de quem olha. */
+  --glass-edge:
+    inset 0 1px 0 color-mix(in oklab, var(--accent) 30%, rgba(255, 255, 255, 0.1)),
+    0 10px 32px -14px rgba(0, 0, 0, 0.55);
+
+  /* O mesmo cinza que o vidro produz sobre o fundo #0a0a0c, só que sólido:
+     o modal continua parecendo a mesma peça, e para de deixar o canvas passar. */
+  --surface-solid: #17171a;
+  --canvas-solid: #101013;
+}
+
+/* ── O VIDRO DO PAINEL ───────────────────────────────────────────────
+   Só aqui. A classe entra no <html> pelo OwnerLayout e sai quando ele
+   desmonta, que é o que mantém a fronteira do white label de pé: o sistema do
+   cliente continua com o material e a tinta que ele já tinha, e o dono pode
+   engrossar o vidro da casa dele sem mexer na casa de ninguém.
+
+   POR QUE O VIDRO NÃO APARECIA. Ele estava certo e discreto demais pro lugar
+   onde vive. `--surface` é 6% de branco: sobre o cinza claro do tema claro
+   isso já é uma superfície: sobre o onyx é quase nada. E `backdrop-filter`
+   desfoca o que está atrás — atrás havia preto liso, e o borrão de uma chapa
+   lisa é a mesma chapa. Sobrava um retângulo 6% mais claro que o fundo, que é
+   exatamente o que se via.
+
+   O que o material da Apple faz nesse caso, e o que está aqui:
+
+     CORPO. A tinta sobe de 6% pra 11%. É o que faz a peça existir sobre preto
+     mesmo quando não há nada atrás pra desfocar.
+
+     ESPECULAR. Um fio branco de verdade na aresta de cima (42%, contra os 10%
+     de antes), como luz batendo na quina de uma placa de vidro. É a camada que
+     mais lê como vidro e a mais barata: é uma sombra interna de 1px.
+
+     ESPESSURA. Um fio escuro na aresta de baixo. Sem ele a peça é uma película;
+     com ele o olho lê uma placa que tem lado.
+
+     CONTORNO. Um anel de 1px em volta inteira, fraco. Vidro tem borda em todo
+     o perímetro, não só em cima.
+
+     PROFUNDIDADE. A sombra projetada fica mais larga e mais baixa, pra a peça
+     parecer apoiada acima da tela em vez de colada nela.
+
+     MAIS BORRÃO E MAIS CROMA. 34px e 200% de saturação: quando há papel de
+     parede atrás, é isto que transforma a arte em cor viva atravessando o
+     vidro em vez de um cinza lavado.
+
+   O EFEITO É MAIS FORTE COM PAPEL DE PAREDE, e isso não é defeito: vidro
+   mostra o que está atrás dele, e sobre preto liso não há o que mostrar. As
+   camadas acima é que garantem que ele continue lendo como vidro mesmo assim. */
+html.painel-do-dono {
+  --glass-blur: blur(34px) saturate(200%);
+}
+
+html.painel-do-dono.dark {
+  --surface: rgba(255, 255, 255, 0.11);
+  --surface-2: rgba(255, 255, 255, 0.16);
+  --line: rgba(255, 255, 255, 0.16);
+  --line-soft: rgba(255, 255, 255, 0.09);
+  --line-strong: rgba(255, 255, 255, 0.28);
+
+  --glass-edge:
+    /* a luz batendo na quina de cima */
+    inset 0 1px 0 color-mix(in oklab, var(--accent) 16%, rgba(255, 255, 255, 0.42)),
+    /* a espessura da placa, vista por baixo */
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    /* o contorno, que existe no perímetro inteiro e não só em cima */
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    /* apoiada acima da tela, não colada nela */
+    0 20px 44px -22px rgba(0, 0, 0, 0.8);
+
+  /* A TINTA FICA BRANCA.
+     O `--ink` do app é o Lavender da identidade (#e2deec), e o desvio pro roxo
+     que suaviza a leitura longa sobre cinza vira encardido sobre vidro claro
+     apoiado no preto: o texto lê como cinza sujo em vez de branco.
+
+     A escala de apoio vem junto e neutra. Deixar só o primeiro nível branco e
+     manter os outros três lilases daria uma tela com duas famílias de cinza
+     brigando — e o olho lê isso como desalinho, mesmo sem saber nomear.
+
+     E ELA SOBE JUNTO COM O VIDRO. Os dois níveis de baixo (`--ink-3` e
+     `--ink-4`) são a letra de apoio: rótulo de campo, linha de ajuda, migalha.
+     Eles foram desenhados pra ser discretos sobre um cinza escuro e chapado, e
+     discreto sobre vidro de 11% apoiado num papel de parede vivo é invisível.
+     Continuam mais fracos que o texto principal, que é o papel deles, só que
+     agora numa faixa que sobrevive ao que passa por trás. */
+  --ink: #ffffff;
+  --ink-2: #d8dadf;
+  --ink-3: #adb0b8;
+  --ink-4: #8e919a;
+
+  /* O vidro opaco (modal, menu suspenso) acompanha, senão abrir um diálogo
+     baixa o brilho da tela inteira e parece outro produto. */
+  --surface-solid: #1c1c20;
+}
+
+/* ── Tokens de estado ───────────────────────────────────────────────────────
+   Faltava a este app o mesmo tratamento que canvas/surface/ink já tinham: as
+   cores de ESTADO estavam cruas no meio das telas (`bg-emerald-50`,
+   `text-red-600`, `border-amber-200`). Essas escalas são afinadas para fundo
+   claro — no tema escuro o -50 vira uma mancha pastel acesa e o -600 quase
+   some. É daí que vem a sensação de que uma tela é "de outro sistema": não
+   do layout, mas da paleta de estado.
+
+   Aqui cada estado vira papel, e o valor troca com o tema:
+
+     ok       positivo — venda ganha, pago, conectado, ativo
+     warn     atenção — pendente, vencendo, parcial
+     danger   negativo — perdido, cancelado, vencido, erro
+     info     neutro informativo — agendado, em análise
+
+   Cada papel tem quatro faces, e o nome diz onde usar:
+
+     --X        a cor cheia   → bolinha, selo sólido, barra de gráfico
+     --X-ink    texto/ícone   → já legível sobre o fundo do tema atual
+     --X-bg     fundo tênue   → pílula, faixa, linha destacada
+     --X-line   borda         → contorno da pílula, da faixa, do cartão
+
+   -bg e -line saem da cor cheia por color-mix, então trocar --ok no escuro
+   arrasta o tint e a borda junto — não existe uma segunda verdade sobre
+   "qual é o verde deste app". */
+:root {
+  --ok: #059669;
+  --ok-ink: #047857;
+  --warn: #d97706;
+  --warn-ink: #b45309;
+  --danger: #dc2626;
+  --danger-ink: #b91c1c;
+  --info: #0284c7;
+  --info-ink: #0369a1;
+
+  --state-bg-mix: 11%;
+  --state-line-mix: 26%;
+}
+
+.dark {
+  /* No escuro a cor cheia sobe um degrau (ela agora aparece sobre preto) e o
+     texto sobe dois: o -600 do tema claro não tem contraste sobre o fundo do
+     app. Os tints ficam um pouco mais fortes porque translúcido sobre escuro
+     rende menos que sobre branco. */
+  --ok: #10b981;
+  --ok-ink: #34d399;
+  --warn: #f59e0b;
+  --warn-ink: #fbbf24;
+  --danger: #ef4444;
+  --danger-ink: #f87171;
+  --info: #0ea5e9;
+  --info-ink: #7dd3fc;
+
+  --state-bg-mix: 16%;
+  --state-line-mix: 32%;
+}
+
+@theme inline {
+  --color-ok: var(--ok);
+  --color-ok-ink: var(--ok-ink);
+  --color-ok-bg: color-mix(in oklab, var(--ok) var(--state-bg-mix), transparent);
+  --color-ok-line: color-mix(in oklab, var(--ok) var(--state-line-mix), transparent);
+
+  --color-warn: var(--warn);
+  --color-warn-ink: var(--warn-ink);
+  --color-warn-bg: color-mix(in oklab, var(--warn) var(--state-bg-mix), transparent);
+  --color-warn-line: color-mix(in oklab, var(--warn) var(--state-line-mix), transparent);
+
+  --color-danger: var(--danger);
+  --color-danger-ink: var(--danger-ink);
+  --color-danger-bg: color-mix(in oklab, var(--danger) var(--state-bg-mix), transparent);
+  --color-danger-line: color-mix(in oklab, var(--danger) var(--state-line-mix), transparent);
+
+  --color-info: var(--info);
+  --color-info-ink: var(--info-ink);
+  --color-info-bg: color-mix(in oklab, var(--info) var(--state-bg-mix), transparent);
+  --color-info-line: color-mix(in oklab, var(--info) var(--state-line-mix), transparent);
+}
+
+/* Quem declara --accent no style (a casca do workspace, os modais do dono)
+   recalcula o --accent-ink a partir DAQUELA cor — senão o token do :root
+   ficaria preso na cor padrão e todo cliente veria o mesmo tom. */
+[style*="--accent"] {
+  --accent-ink: color-mix(in oklab, var(--accent) 88%, #000000);
+}
+
+/* O PRIMEIRO SELETOR AQUI NÃO É REDUNDÂNCIA, É O CONSERTO.
+   `.dark [style*=...]` é um seletor de DESCENDENTE: ele exige que o elemento
+   pintado esteja DENTRO de um `.dark`. Só que quem carrega as duas coisas é o
+   mesmo elemento — o <html> é a raiz que recebe a classe `.dark` E o
+   `--accent` que a casca do workspace escreve no style. Nenhum descendente
+   declara `--accent` no style próprio, então esta regra nunca alcançava
+   ninguém: no tema escuro, o app inteiro caía na fórmula clara
+   (accent + preto) e todo texto na cor da marca vinha escuro sobre fundo
+   escuro. Era por isso que a aba selecionada de Meu Site aparecia azul-quase
+   invisível, e junto com ela cada rótulo, ícone e número em `--accent-ink` do
+   CRM, do Kanban e dos fluxos. */
+.dark[style*="--accent"],
+.dark [style*="--accent"] {
+  --accent-ink: color-mix(in oklab, var(--accent) 56%, #ffffff);
+}
+
+/* ── Tokens do shadcn ───────────────────────────────────────────────────────
+   Os componentes do shadcn (button, textarea…) usam classes como
+   `bg-primary`, `border-input` e `ring-ring`. No Tailwind 4 quem cria essas
+   classes é o bloco @theme — sem ele, as classes existem no HTML mas não
+   pintam nada. Os valores ficam em variáveis CSS pra poderem mudar por
+   tema; `inline` faz o Tailwind ler a variável no ponto de uso. */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent-surface: var(--accent-surface);
+  --color-accent-surface-foreground: var(--accent-surface-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+/* Os tokens do shadcn são derivados dos mesmos papéis acima, pra não existir
+   duas verdades sobre "qual é a cor da borda". */
+:root {
+  color-scheme: light;
+
+  --background: var(--surface);
+  --foreground: var(--ink);
+  --primary: #0f1520;
+  --primary-foreground: #ffffff;
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--ink);
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --muted: var(--surface-2);
+  --muted-foreground: var(--ink-3);
+  --accent-surface: var(--surface-2);
+  --accent-surface-foreground: var(--ink);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--line-strong);
+}
+
+.dark {
+  /* No escuro a ação primária inverte: claro sobre fundo escuro. */
+  --primary: #f4f4f6;
+  --primary-foreground: #141418;
+  --destructive: #ef4444;
+}
+
+/* ── Acabamento ─────────────────────────────────────────────────────────────
+   Raios um pouco maiores que o padrão do Tailwind. Como toda a interface usa
+   rounded-lg/xl/2xl, mudar a escala aqui suaviza o app inteiro de uma vez. */
+@theme {
+  --radius-lg: 0.7rem;
+  --radius-xl: 0.9rem;
+  --radius-2xl: 1.15rem;
+  --radius-3xl: 1.5rem;
+}
+
+/* ── Movimento ──────────────────────────────────────────────────────────────
+   As curvas e os tempos do app viviam copiados à mão em cada arquivo: o mesmo
+   `cubic-bezier(0.32, 0.72, 0, 1)` aparecia repetido em oito lugares, e cada
+   componente novo escolhia um tempo diferente pro mesmo gesto. O resultado é
+   um app onde nada está errado e mesmo assim nada parece do mesmo lugar.
+
+   Aqui existe UMA escala, e ela é curta de propósito:
+
+     --ease-ios     entrada e saída de peça, hover, pressão — a curva que
+                    desacelera forte no fim, sem quicar
+     --ease-suave   entrada de conteúdo grande (tela, lista) — parte mais
+                    solta e assenta devagar
+     --ease-saida   o que está indo embora: acelera e some
+
+   Tempo: quanto MAIOR o objeto, mais lento. Um toque de botão responde em
+   140ms porque o dedo já saiu; uma tela inteira leva 420ms porque o olho
+   precisa acompanhar de onde ela veio. */
+:root {
+  --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-suave: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-saida: cubic-bezier(0.4, 0, 1, 1);
+
+  --t-toque: 140ms;
+  --t-rapido: 200ms;
+  --t-normal: 320ms;
+  --t-tela: 420ms;
+}
+
+/* ── Os ícones ──────────────────────────────────────────────────────────────
+   O lucide desenha com traço 2, que é o peso certo pra um ícone de 24px
+   vivendo sozinho. Aqui eles moram a 13–20px, colados em texto de 11 a 14px,
+   e o traço 2 fica mais pesado que a própria palavra que acompanha: o ícone
+   grita e o rótulo sussurra.
+
+   1.75 é a proporção do SF Symbols nesse tamanho — o ícone tem o mesmo peso
+   ótico do texto ao lado. Uma regra só alcança os ~700 ícones do app porque
+   CSS ganha de atributo de apresentação do SVG (que é como o lucide escreve o
+   stroke-width). Os gráficos não são atingidos: eles desenham SVG próprio, sem
+   a classe `lucide`. */
+svg.lucide {
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Ícone dentro de botão sólido e pequeno volta a engrossar: sobre cor cheia,
+   traço fino demais some. */
+:where([class~="bg-primary"]) svg.lucide {
+  stroke-width: 1.9;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  /* Outfit é a fonte do app. O resto da pilha só existe pro intervalo entre o
+     primeiro texto e o arquivo chegar: SF onde existe; no Windows, a variável
+     do Segoe, que tem o mesmo desenho mais aberto. */
+  font-family:
+    'Outfit', -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text",
+    "Segoe UI", system-ui, Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--app-bg);
+  color: var(--ink);
+}
+
+/* ── Fundo do app ───────────────────────────────────────────────────────────
+   O brilho fica numa camada FIXA atrás de tudo: não rola com o conteúdo, não
+   recebe clique, e é ele que dá ao vidro o que desfocar. Sem esse brilho o
+   vidro some — vira um retângulo cinza.
+
+   ELE NÃO TEM MAIS BOLAS. Eram três `radial-gradient` e cada um tinha uma
+   parada final (`transparent 72%`) que o olho lê como BORDA: no escuro viravam
+   dois discos cinza pousados na tela, e nenhuma marca tem discos cinza. Um
+   gradiente linear não tem centro nem raio, então não vira objeto — dá a mesma
+   variação de luz que o vidro precisa e some do primeiro plano. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    /* A luz principal, descendo do topo. */
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--glow-mix) var(--glow-a), transparent) 0%,
+      transparent 62%
+    ),
+    /* Uma segunda luz entrando pela quina de baixo, pra metade de baixo não
+       virar chapa lisa — o vidro precisa de alguma variação pra desfocar. */
+    linear-gradient(
+      to top right,
+      color-mix(in srgb, var(--glow-2) var(--glow-b), transparent) 0%,
+      transparent 52%
+    );
+}
+
+/* ── O padrão de vidro ──────────────────────────────────────────────────────
+   Uma regra só transforma as ~260 superfícies do app em vidro, sem editar
+   tela por tela: quem tem `bg-surface` desfoca o que está atrás e ganha o
+   fio de luz na borda de cima.
+
+   Fica em :where() de propósito — especificidade zero — pra qualquer
+   `shadow-*` do Tailwind no próprio elemento continuar mandando.
+
+   `bg-surface-2` NÃO desfoca: ele já está apoiado num vidro, e desfocar duas
+   vezes o mesmo fundo só embaça sem dar profundidade (e custa caro). */
+/* ── A ação principal ───────────────────────────────────────────────────────
+   `bg-primary` era uma cor chapada — no escuro, um retângulo branco. Nas peças
+   da marca nenhum botão é chapado: tem um degradê curto e um fio de luz na
+   aresta de cima, como se a luz batesse de frente.
+
+   Vale pros 28 lugares que usam `bg-primary` de uma vez. Em :where() (peso
+   zero) pra qualquer `shadow-*` no próprio elemento continuar mandando, e com
+   `background-image`, que se sobrepõe ao `background-color` do Tailwind sem
+   brigar com ele. */
+:where([class~="bg-primary"]) {
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.04) 46%,
+    rgba(0, 0, 0, 0.06) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 8px 20px -10px color-mix(in oklab, var(--primary) 65%, transparent);
+}
+
+/* ── A ação principal DO CLIENTE ────────────────────────────────────────────
+   O botão do sistema já foi duas coisas erradas. Primeiro cor chapada, um
+   retângulo de tinta seca sem aresta nenhuma. Depois cor CLAREADA com degradê
+   por cima, pra ele se separar do fundo escuro — só que clarear o azul-marinho
+   da marca produz um cinza-arroxeado que não é mais a cor de ninguém, e o
+   degradê de plástico é justamente o acabamento que a Apple abandonou.
+
+   Este é de vidro, e é a solução certa pro problema de origem: a marca pode
+   ser escura e o fundo também. Um botão OPACO na cor da marca precisa que a
+   cor se destaque do fundo. Um botão de VIDRO não precisa — ele se destaca
+   pelo material (desfoque, fio de luz na aresta de cima, sombra curta
+   embaixo), e a cor pode continuar sendo exatamente a da marca, escura como
+   ela é.
+
+   Uma classe e não utilidades soltas em cada botão, porque o acabamento tem
+   quatro estados e eles precisam andar juntos. */
+.botao-da-marca {
+  /* A cor CRUA da marca, translúcida. Não é `--accent-cheio` (a versão
+     puxada pro claro): aqui o contraste vem do material, não de clarear a
+     cor, e o azul continua o azul do cliente. */
+  background-color: color-mix(in oklab, var(--accent) 78%, transparent);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  color: var(--sobre-a-marca);
+  /* O contorno é o que existe no lugar da massa de cor: sem ele, vidro escuro
+     sobre fundo escuro não tem onde começar nem onde terminar. */
+  border: 1px solid color-mix(in oklab, #ffffff 24%, transparent);
+  box-shadow:
+    /* a luz batendo na aresta de cima */
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    /* a espessura do vidro, vista por baixo */
+    inset 0 -1px 0 rgba(0, 0, 0, 0.22),
+    /* a peça não está pintada na tela, está apoiada nela */
+    0 6px 18px -10px rgba(0, 0, 0, 0.65);
+  /* NADA DE `filter` AQUI, EM ESTADO NENHUM.
+     `filter` cria um backdrop root: o elemento passa a ser a raiz do que o
+     `backdrop-filter` enxerga, e o vidro do PRÓPRIO botão morre no hover. É
+     por isso que o hover muda a opacidade da cor, e não o brilho. */
+  transition:
+    background-color var(--t-rapido) var(--ease-ios),
+    border-color var(--t-rapido) var(--ease-ios),
+    box-shadow var(--t-rapido) var(--ease-ios),
+    transform var(--t-toque) var(--ease-ios);
+}
+
+/* No hover o vidro FECHA: fica mais cheio da cor e a aresta acende. É o
+   mesmo gesto de um controle do iOS ao receber o cursor. */
+.botao-da-marca:hover:not(:disabled) {
+  background-color: color-mix(in oklab, var(--accent) 92%, transparent);
+  border-color: color-mix(in oklab, #ffffff 34%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.22),
+    0 10px 24px -10px rgba(0, 0, 0, 0.7);
+}
+
+/* Encolhe um fio e perde a sombra de baixo: o vidro encosta na tela. Escala e
+   não `translateY`, que é o jeito da Apple — o botão responde ao toque no
+   ponto onde foi tocado, sem sair do lugar. */
+.botao-da-marca:active:not(:disabled) {
+  transform: scale(0.97);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.22);
+}
+
+/* Desabilitado perde o relevo inteiro, senão continua parecendo clicável. */
+.botao-da-marca:disabled {
+  background-color: var(--surface-2);
+  border-color: var(--line);
+  color: var(--ink-4);
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .botao-da-marca {
+    transition: none;
+  }
+
+  .botao-da-marca:active:not(:disabled) {
+    transform: none;
+  }
+}
+
+:where(
+  [class~="bg-surface"],
+  [class~="bg-surface/60"],
+  [class~="bg-surface/50"],
+  [class~="bg-surface/40"]
+) {
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-edge);
+}
+
+/* Título grande com espaçamento apertado — o traço que mais lembra a Apple
+   na tipografia, e o que some quando se usa a fonte no ajuste padrão. */
+h1,
+h2,
+h3 {
+  letter-spacing: -0.021em;
+}
+
+/* Números em coluna alinham por padrão (tabelas de valores, indicadores). */
+table,
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Barra de rolagem discreta, acompanhando o tema. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--line-strong);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--ink-4);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ── Herói do workspace (src/components/ui/ruixen-moon-chat.tsx) ────────────
+   O PALCO NÃO PINTA MAIS NADA.
+   Havia aqui um disco de luz de 540px, borrado a 52px, plantado atrás do
+   relógio. Ele fazia duas coisas erradas ao mesmo tempo: clareava justamente o
+   pedaço onde o relógio de vidro está, e o vidro só existe por contraste com o
+   que passa por baixo — com um borrão claro atrás, o cartão deixava de parecer
+   material e virava um retângulo mais claro que o fundo. E, com uma arte de
+   marca no fundo, o disco apagava a arte no centro da tela.
+
+   Agora o fundo é só o do app (ou a arte do cliente) e o cartão é só vidro. O
+   palco continua existindo como contexto de posicionamento. */
+.moon-stage {
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+}
+
+/* Vidro nomeado. É o MESMO material de `bg-surface` — mesmos tokens — só que
+   pedido pelo nome, para blocos maiores (herói, relógio) que querem um vidro
+   mais presente e um brilho próprio atrás. Uma classe explícita evita que
+   esses blocos dependam de decorar qual utilitário do Tailwind vira vidro. */
+.glass-panel {
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--line);
+  box-shadow: var(--glass-edge);
+  color: var(--ink);
+}
+
+.glass-chip {
+  background: var(--surface);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  transition:
+    background-color 200ms cubic-bezier(0.32, 0.72, 0, 1),
+    transform 200ms cubic-bezier(0.32, 0.72, 0, 1),
+    border-color 200ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.glass-chip:hover {
+  background: var(--surface-2);
+  border-color: var(--line-strong);
+  transform: translateY(-1px);
+}
+
+/* ── Vidro líquido ──────────────────────────────────────────────────────────
+   O grau acima do `.glass-panel`: além de desfocar, ENTORTA o que está atrás.
+   O componente está em src/components/ui/liquid-glass.tsx, e o filtro SVG
+   entra uma vez só no documento (main.tsx).
+
+   As camadas são separadas de propósito, e a ordem importa: cada uma desfoca o
+   resultado da anterior, porque `backdrop-filter` enxerga tudo que já foi
+   pintado atrás — inclusive o irmão pintado antes dela.
+
+     fosco    o mesmo material do app inteiro (--glass-blur)
+     lente    a distorção; só o Chromium a compõe, e onde não compõe some
+     tinta    o leite branco que dá corpo ao vidro
+     aresta   a luz presa nas duas bordas, que é o que o faz parecer espesso */
+.vidro-liquido {
+  position: relative;
+  overflow: hidden;
+  color: var(--ink);
+  /* O raio vem de uma VARIÁVEL, e não de um `rounded-*` do Tailwind na peça:
+     a camada da lente precisa recortar a si mesma com o mesmo raio (ver
+     abaixo), e `clip-path` não herda raio de canto de ninguém. Quem quiser
+     outro canto troca `--vidro-raio`, e as duas coisas continuam iguais. */
+  border-radius: var(--vidro-raio, 18px);
+  /* NÃO leva `isolation: isolate` (que o material de referência trazia): isolar
+     cria uma raiz de fundo, e a partir dali `backdrop-filter` passa a enxergar
+     só o que está DENTRO da peça — ou seja, nada. O vidro ficava opaco e
+     ninguém entendia por quê. */
+  --vidro-tinta: rgba(255, 255, 255, 0.32);
+  --vidro-aresta-a: rgba(255, 255, 255, 0.62);
+  --vidro-aresta-b: rgba(255, 255, 255, 0.4);
+  /* O CONTORNO, nos quatro lados. Ver `.vidro-liquido-aresta`. No claro ele é
+     escuro: um fio branco sobre fundo claro não fecha desenho nenhum. */
+  --vidro-contorno: rgba(15, 21, 32, 0.1);
+  box-shadow:
+    0 8px 24px -12px rgba(15, 21, 32, 0.28),
+    0 2px 6px -3px rgba(15, 21, 32, 0.14);
+}
+
+.dark .vidro-liquido {
+  /* No escuro o leite some quase todo: 32% de branco sobre um fundo #0a0a0c
+     vira um retângulo cinza-claro e o vidro deixa de ser vidro.
+
+     11%, E NÃO OS 5,5% DE ANTES. O número foi calibrado quando o fundo daqui
+     era onyx liso, e sobre preto 5,5% já dá corpo. Com papel de parede atrás,
+     não dá: onde a arte clareia, a tinta some e o dock vira um buraco com a
+     imagem passando por dentro. É a mesma conta que o resto do painel já
+     passou a usar (`--surface`), e o dock era a única peça que tinha ficado
+     pra trás — daí ele destoar do restante da tela. */
+  --vidro-tinta: rgba(255, 255, 255, 0.11);
+  --vidro-aresta-a: color-mix(in oklab, var(--accent) 34%, rgba(255, 255, 255, 0.18));
+  /* 20%, e não 9%. Ver `.vidro-liquido-aresta`: com 9% a borda de baixo e a da
+     DIREITA não existiam, e a ponta direita do dock ficava aberta. */
+  --vidro-aresta-b: rgba(255, 255, 255, 0.2);
+  --vidro-contorno: rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 14px 40px -18px rgba(0, 0, 0, 0.8),
+    0 0 34px -16px color-mix(in oklab, var(--accent) 45%, transparent);
+}
+
+.vidro-liquido-camada {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.vidro-liquido-fosco {
+  z-index: 0;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.vidro-liquido-lente {
+  z-index: 1;
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  filter: url(#crm-vidro-liquido);
+  /* Trava de segurança. `backdrop-filter` guarda uma cópia de tudo que está
+     atrás (a página inteira) e o `filter` de SVG age nessa cópia; filtro pode,
+     por especificação, pintar FORA da caixa do elemento, e como ele é composto
+     na GPU o `overflow: hidden` do pai nem sempre alcança. `clip-path` age
+     depois do filtro e prende o resultado aqui dentro. Medido em Chrome e Edge
+     com aceleração: sem isto a lente já respeitava a caixa, mas o custo do
+     recorte é zero e o modo de falhar é uma faixa atravessando a tela. */
+  clip-path: inset(0 round var(--vidro-raio, 18px));
+}
+
+.vidro-liquido-tinta {
+  z-index: 2;
+  background: var(--vidro-tinta);
+}
+
+/* A PONTA DIREITA DO DOCK NÃO FECHAVA, e o desenho da luz é a causa.
+   As duas arestas são deslocadas: a primeira +1.5px pra baixo e pra direita,
+   que acende as bordas de CIMA e da ESQUERDA; a segunda -1px, que acende as de
+   BAIXO e da DIREITA. É o certo pra luz vindo da quina de cima à esquerda, e a
+   diferença entre as duas é o que dá volume.
+
+   Só que a segunda estava em 9% de branco. Sobre o onyx liso de antes, 9% ainda
+   marcava alguma coisa; sobre papel de parede claro, não marca nada. Resultado:
+   a metade esquerda da cápsula tinha contorno e a direita não tinha nenhum, e
+   uma forma que só fecha de um lado o olho lê como recorte inacabado. É
+   literalmente o canto que aparece cortado.
+
+   A correção é em duas partes, e as duas importam:
+
+     A SEGUNDA ARESTA SOBE, pra a luz refletida existir de fato na quina de
+     baixo à direita, que é onde ela existe em vidro de verdade.
+
+     E ENTRA UM CONTORNO nos QUATRO lados, fraco e sem deslocamento. Ele é o
+     que garante que a forma feche em qualquer fundo — inclusive num papel de
+     parede que seja claro exatamente onde a peça termina, que é uma coisa que
+     não dá pra prever ao escolher a imagem.
+
+   O contorno vai POR ÚLTIMO na lista: sombra de caixa pinta de trás pra frente,
+   então as duas arestas com deslocamento ficam por cima dele nas quinas onde a
+   luz é o assunto. */
+.vidro-liquido-aresta {
+  z-index: 3;
+  box-shadow:
+    inset 1.5px 1.5px 1px -1px var(--vidro-aresta-a),
+    inset -1px -1px 1px 0 var(--vidro-aresta-b),
+    inset 0 0 0 1px var(--vidro-contorno);
+}
+
+/* O ruído fractal é recalculado a cada quadro em que o fundo muda — e o dock
+   fica parado por cima de uma tela que rola, então isso é TODO quadro. Quem
+   pede menos movimento costuma pedir por enjoo ou por máquina fraca, e nos
+   dois casos essa é a camada certa pra cair. */
+@media (prefers-reduced-motion: reduce) {
+  .vidro-liquido-lente {
+    display: none;
+  }
+}
+
+/* ── O dock ─────────────────────────────────────────────────────────────────
+   O menu do painel, deitado, centralizado e na borda de baixo.
+   Componente em src/components/layout/DockDeNavegacao.tsx. */
+.dock-trilho {
+  /* Rola de lado, e só quando precisa. Os 17 itens ocupam ~790px: entram
+     inteiros a partir de 900px de janela, e abaixo disso o dock vira uma
+     faixa que se arrasta com o dedo, que é o gesto natural de um dock. */
+  overflow-x: auto;
+  /* O respiro em cima não é enfeite: `overflow-x` obriga o eixo Y a recortar
+     também, e sem esses pixels o pulo de 4px do item no hover seria cortado. */
+  padding: 12px 16px 8px;
+  scrollbar-width: none;
+  /* Ocupa a largura do dock e nada além. Enquanto couber, `fit-content` encolhe
+     até o conteúdo; quando não couber, para em 100% e a faixa passa a rolar.
+     Importa porque o dock flutua sobre a tela: full width, ele roubaria o
+     clique de uma faixa inteira de 90px de ponta a ponta. */
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+  pointer-events: auto;
+}
+
+.dock-trilho::-webkit-scrollbar {
+  display: none;
+}
+
+/* A FAIXA ONDE O DOCK CORRE.
+   Ao ser escondido, o dock atravessa meia tela e passa da borda direita. Sem
+   recorte, esse percurso vira largura de página e o navegador abre uma barra de
+   rolagem horizontal no meio da animação — o sintoma clássico de elemento
+   animado para fora da tela. `clip` no eixo X corta sem criar caixa de rolagem
+   e, ao contrário de `hidden`, deixa o eixo Y livre: a sombra do vidro e o pulo
+   de 4px do item no hover continuam aparecendo. */
+.dock-faixa {
+  overflow-x: clip;
+}
+
+/* ESCONDER É UM PERCURSO, NÃO UM CORTE.
+   Trocado num quadro só, o dock some no meio da tela e uma pastilha nasce no
+   canto: o olho lê duas peças, não uma que foi guardada. Com o caminho
+   desenhado, quem some e quem aparece são a mesma coisa, e o canto direito
+   passa a ser um lugar conhecido em vez de uma descoberta.
+
+   52vw é o que basta: o dock está centralizado, então meia tela leva a borda
+   esquerda dele até o meio e joga a direita para fora. Só `transform`, pelo
+   mesmo motivo da entrada — opacidade mataria o vidro no caminho e o que sairia
+   voando seria um retângulo cinza. */
+.dock-trilho-sai {
+  animation: dock-sai 280ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+@keyframes dock-sai {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateX(52vw);
+  }
+}
+
+.dock {
+  /* `width: max-content` + `margin: auto` centraliza enquanto couber e, quando
+     não couber, as margens automáticas viram zero e a faixa fica rolável desde
+     o começo. Com `justify-content: center` no pai o começo da lista ficaria
+     fora do alcance da rolagem, que é o jeito conhecido de perder os primeiros
+     itens de um menu. */
+  width: max-content;
+  margin-inline: auto;
+  animation: dock-entra 520ms var(--ease-suave) both;
+}
+
+/* SÓ TRANSFORM. NUNCA OPACIDADE.
+   A entrada era um deslize COM esmaecimento, e o dock nascia sem desfoque
+   nenhum: o texto da tela atravessava o vidro nítido, como se `backdrop-filter`
+   não existisse. A causa não é o vidro, é a animação. Opacidade abaixo de 1
+   transforma o elemento numa raiz de fundo, e a partir dali o
+   `backdrop-filter` de dentro passa a enxergar só o que está DENTRO do dock —
+   ou seja, nada. Pior: com `fill: both` o Chromium mantém a camada composta
+   depois de a animação terminar, então o vidro nunca voltava.
+
+   Transform não cria raiz de fundo. O deslize sozinho dá a mesma entrada. */
+@keyframes dock-entra {
+  from {
+    transform: translateY(16px);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.dock-linha {
+  padding: 6px;
+}
+
+.dock-item {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  width: 38px;
+  flex: none;
+  border-radius: 12px;
+  color: var(--ink-3);
+  transition:
+    transform 280ms var(--ease-ios),
+    color 220ms var(--ease-ios),
+    background-color 220ms var(--ease-ios);
+}
+
+.dock-item:hover {
+  color: var(--ink);
+  background: color-mix(in oklab, var(--ink) 8%, transparent);
+  transform: translateY(-4px) scale(1.06);
+}
+
+.dock-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.dock-item[aria-current="page"] {
+  color: var(--accent-ink);
+  background: transparent;
+}
+
+/* O destaque é UMA peça que escorrega até onde você foi, como era na coluna:
+   quando o destaque se move o olho segue, quando pisca o olho procura. */
+.dock-pilula {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 0;
+  height: 38px;
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--accent) 16%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent) 32%, transparent);
+  transition:
+    transform 420ms var(--ease-ios),
+    width 420ms var(--ease-ios);
+}
+
+.dock-pilula-quieta {
+  transition: none;
+}
+
+.dock-divisor {
+  flex: none;
+  width: 1px;
+  height: 20px;
+  margin-inline: 7px;
+  background: var(--line-strong);
+}
+
+/* ── O reflexo ──────────────────────────────────────────────────────────────
+   O dock virado de cabeça pra baixo, na superfície embaixo dele. É o que o
+   descola da página: sem reflexo a peça fica colada na borda, e com ele passa
+   a ser um objeto apoiado em alguma coisa.
+
+   É CÓPIA DOS ÍCONES, não uma barra borrada. A primeira versão era uma mancha
+   de luz — mais barata, e errada: mancha lê como sombra, e sombra não é
+   reflexo. O que faz o olho aceitar a peça como objeto é reconhecer os mesmos
+   ícones ali embaixo, invertidos.
+
+   A cópia é `aria-hidden` e sem clique no componente: pra quem usa leitor de
+   tela ou teclado o menu continua tendo 17 itens, não 34. */
+/* O REFLEXO É UMA JANELA, NÃO UMA PEÇA COM MARGEM NEGATIVA.
+   A primeira versão deixava a cópia inteira (50px) no fluxo e puxava o que
+   sobrava com `margin-bottom: -22px`. Duas coisas quebravam:
+
+     O trilho passou a TRANSBORDAR: conteúdo de 115px numa caixa de 101. Como
+     `overflow-x: auto` obriga o eixo Y a recortar junto, o reflexo era cortado
+     pelo container e o trilho virava uma área rolável na vertical — invisível,
+     e o suficiente pra rolar a peça errada com a roda do mouse.
+
+     E o empilhamento (fundo + desfoque + máscara + espelho, tudo num elemento
+     só) deixava um RETÂNGULO ESCURO na composição em telas com escala
+     fracionária (125%, 150%), atravessando os ícones espelhados.
+
+   Agora a altura é declarada e o recorte é do container. A cópia continua com
+   50px, mas o que se vê são os 28 de cima — que, espelhados, são a base do
+   dock. Nada transborda e a composição é de um elemento comum. */
+.dock-reflexo {
+  display: block;
+  width: max-content;
+  height: 28px;
+  overflow: hidden;
+  margin: 3px auto 0;
+  border-radius: var(--vidro-raio, 18px) var(--vidro-raio, 18px) 0 0;
+  background: color-mix(in oklab, var(--ink) 5%, transparent);
+  opacity: 0.42;
+  pointer-events: none;
+  user-select: none;
+  /* No espaço do CONTAINER agora, sem inversão pra raciocinar: em cima,
+     encostado no dock, é opaco; embaixo desvanece. */
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.95) 0%, transparent 96%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.95) 0%, transparent 96%);
+}
+
+.dark .dock-reflexo {
+  background: color-mix(in oklab, #ffffff 6%, transparent);
+  opacity: 0.4;
+}
+
+/* O espelho fica AQUI, no filho. A linha tem 50px dentro de uma janela de 28,
+   e `scaleY(-1)` gira em torno do próprio centro: o que aparece na janela
+   passa a ser a metade de BAIXO da cópia, que é exatamente a base do dock. */
+.dock-reflexo-linha {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 6px;
+  transform: scaleY(-1);
+}
+
+.dock-balao {
+  position: fixed;
+  z-index: 60;
+  /* O `top` que o componente manda é o topo do ícone: puxar 100% da própria
+     altura pra cima é o que põe o balão ACIMA dele. Com o dock encostado na
+     borda de baixo, não há tela sobrando embaixo pra desenhar nada. */
+  transform: translate(-50%, -100%);
+  padding: 4px 9px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  /* Opaco, não vidro: o balão nasce em cima de qualquer tela, e sobre uma
+     tabela cheia de números o texto de 11px atravessado pelo fundo some. */
+  background: var(--surface-solid);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.55);
+  animation: dock-balao-entra 140ms var(--ease-ios) both;
+}
+
+@keyframes dock-balao-entra {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -100%) translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dock,
+  .dock-balao,
+  /* Quem pediu menos movimento troca o dock pela alça direto, sem percurso. O
+     layout já pula os estados de transição nesse caso; isto aqui é o cinto de
+     segurança, para o caso de a marca chegar por outro caminho. A alça tem o
+     bloco dela lá embaixo, depois de ser definida: aqui em cima a regra vinha
+     ANTES e perdia por ordem de fonte. */
+  .dock-trilho-sai {
+    animation: none;
+  }
+  .dock-item:hover {
+    transform: none;
+  }
+  .dock-pilula {
+    transition: none;
+  }
+}
+
+/* ── A barra de cima do sistema do cliente ──────────────────────────────────────
+   Era uma faixa opaca com uma fila de abas: cada aba ativa virava um retângulo
+   CHEIO da cor da marca, com o texto calculado pra ler por cima. Funcionava e
+   era pesado — um bloco saturado é a coisa mais forte da tela, e ele estava no
+   menu, que é onde ninguém quer olhar depois do primeiro segundo.
+
+   Aqui a faixa vira vidro e o destaque vira uma pastilha que DESLIZA, como um
+   controle segmentado. A cor da marca continua presente, só que como tinta
+   (baixa opacidade) em vez de bloco: some do primeiro plano e permanece
+   reconhecível. E funciona com marca clara ou escura sem precisar calcular
+   contraste, porque o texto continua sendo a tinta do tema. */
+.barra-do-cliente {
+  position: relative;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  /* Fio de cabelo em vez de traço: `--line` desenha uma régua no alto da tela,
+     e a barra passa a ser uma caixa. `--line-soft` só separa. */
+  border-bottom: 1px solid var(--line-soft);
+}
+
+/* NO ESCURO A BARRA SUMIA.
+   `--surface` é 6% de branco e `--line-soft` é 7%: sobre o onyx do fundo, as
+   duas coisas somem. A barra encostava na faixa de baixo e as três tiras do
+   topo (aviso do dono, identidade, abas do módulo) viravam uma mancha só,
+   sem hierarquia — nada dizia onde uma acabava e a outra começava.
+
+   Três camadas resolvem, e são as mesmas que o resto do vidro do app já usa:
+
+     O FIO DE LUZ EM CIMA, puxando a cor da marca. É o que dá material à peça:
+     sem ele a barra é um retângulo pintado, com ele é uma superfície pegando
+     luz. Sai de `--accent`, então cada sistema pega a cor do próprio cliente.
+
+     A SOMBRA EMBAIXO, curta e fechada. Ela é que separa de verdade no escuro,
+     onde uma linha de 7% não separa nada.
+
+     UM GRADIENTE DE MEIO PONTO no fundo, pra o topo da barra ficar um fio mais
+     claro que a base. Uma superfície de cor chapada lê como buraco; com a
+     variação, lê como algo apoiado. */
+.dark .barra-do-cliente {
+  background:
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035), transparent),
+    var(--surface);
+  border-bottom-color: var(--line);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--accent) 26%, rgba(255, 255, 255, 0.09)),
+    0 6px 20px -14px rgba(0, 0, 0, 0.9);
+}
+
+/* O TRILHO ROLA SOZINHO, e isso conserta um defeito.
+   O `overflow-x-auto` estava no CABEÇALHO inteiro: com muitos módulos ligados,
+   rolar as abas levava embora a logo do cliente e o botão de sair junto. Num
+   produto white label, a identidade é a última coisa que pode sair da tela.
+   Agora só a fila de abas rola; identidade e conta ficam ancoradas. */
+.abas-do-cliente {
+  overflow-x: auto;
+  scrollbar-width: none;
+  /* O respiro vertical é o que dá lugar à sombra da pastilha: `overflow-x`
+     recorta o eixo Y junto, e sem folga a sombra saía cortada em cima e
+     embaixo. A margem negativa devolve o espaço, então a barra não cresce. */
+  padding-block: 6px;
+  margin-block: -6px;
+}
+
+/* A BORDA ESBATIDA SÓ APARECE DO LADO QUE ESTÁ ESCONDENDO ABA.
+   Ela era fixa nas duas pontas, e a primeira aba nasce colada na ponta
+   esquerda: a pastilha da aba ativa ficava com os primeiros pixels apagados,
+   numa fila que na maioria das telas nem rola. Quem decide é a medição no
+   WorkspaceTopBar; aqui só existem os três estados possíveis. */
+.abas-do-cliente.esbate-esquerda {
+  mask-image: linear-gradient(to right, transparent 0, #000 16px);
+}
+
+.abas-do-cliente.esbate-direita {
+  mask-image: linear-gradient(to left, transparent 0, #000 16px);
+}
+
+.abas-do-cliente.esbate-esquerda.esbate-direita {
+  mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+}
+
+.abas-do-cliente::-webkit-scrollbar {
+  display: none;
+}
+
+.aba-do-cliente {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  padding: 6px 11px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  /* O aperto que a tipografia da Apple tem em texto de interface: sem ele, 13px
+     em peso médio fica largo e o menu parece maior do que é. */
+  letter-spacing: -0.01em;
+  color: var(--ink-3);
+  transition:
+    color var(--t-rapido) var(--ease-ios),
+    opacity var(--t-rapido) var(--ease-ios);
+}
+
+.aba-do-cliente:hover {
+  color: var(--ink);
+}
+
+.aba-do-cliente[aria-current='page'] {
+  color: var(--ink);
+}
+
+/* A TINTA DO ATIVO CONTINUA SENDO A DO TEMA, e não a da marca.
+   Escrever a aba ativa em `--accent-ink` foi tentado e saiu pior: com a
+   pastilha já pintada da marca, texto e fundo ficam no mesmo matiz e o
+   contraste desaba. O item ATIVO ficava menos legível que os inativos, que é
+   exatamente o contrário do que um destaque serve pra fazer.
+   A marca fica na pastilha; a legibilidade fica no texto. */
+
+/* A pastilha é UMA só, e anda. Uma pastilha por aba, aparecendo e sumindo,
+   pisca — e quando pisca o olho procura. Quando desliza, o olho segue. */
+.aba-pilula {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--accent) 16%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent) 26%, transparent);
+  transition:
+    transform 360ms var(--ease-ios),
+    width 360ms var(--ease-ios);
+  pointer-events: none;
+}
+
+/* NO ESCURO A PASTILHA É VIDRO NEUTRO, NÃO TINTA DA MARCA.
+   Pintada da cor do cliente ela virava um retângulo cinza-arroxeado chapado:
+   a cor, achatada contra o fundo escuro, perdia o croma e sobrava só a mancha.
+   E, com uma arte de fundo atrás, uma pastilha colorida briga com a imagem —
+   duas cores disputando o mesmo pedaço de tela.
+
+   Vidro branco resolve os dois: sobre fundo escuro ele levanta, sobre a arte
+   ele lê como pastilha de vidro em cima da imagem, e não compete com cor
+   nenhuma. É a mesma peça que aparece em qualquer marca sem precisar de
+   ajuste. A cor do cliente continua no app inteiro; ela só não precisa estar
+   TAMBÉM aqui. */
+.dark .aba-pilula {
+  background: rgba(255, 255, 255, 0.13);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 2px 10px -6px rgba(0, 0, 0, 0.7);
+}
+
+/* A primeira medição posiciona; ela não pode ser um deslize vindo do canto
+   esquerdo até a aba certa. */
+.aba-pilula-quieta {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aba-pilula {
+    transition: none;
+  }
+}
+
+/* ── A arte de fundo do sistema ─────────────────────────────────────────────────
+   Fica numa camada FIXA em z-index -1, o mesmo plano do brilho do app. É o que
+   faz o vidro das telas desfocar a arte junto com o resto do fundo, em vez de
+   ela ficar chapada por cima. */
+.fundo-do-sistema {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--arte);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* O VÉU.
+   Sem ele o produto dependeria de a arte ser escura o bastante pro texto ler
+   em cima — e um dia alguém sobe uma foto clara. A camada é da cor do app, e
+   por isso funciona nos dois temas sem cálculo: no escuro escurece, no claro
+   clareia. A arte continua reconhecível; ela só para de disputar com o texto.
+
+   ELE É UNIFORME, e isso foi corrigido duas vezes vendo na tela. A primeira
+   versão escurecia as BORDAS (instinto de vinheta), e o texto do produto mora
+   no meio: a saudação caía em cima da parte mais viva da arte. A segunda
+   inverteu e fechou o CENTRO — só que um escurecimento redondo no meio da tela
+   não lê como véu, lê como uma sombra preta pousada atrás do conteúdo, com
+   borda e tudo.
+
+   Véu uniforme não tem forma, e por isso não vira objeto: ele só baixa o
+   volume da imagem inteira, do mesmo tanto em todo lugar. É o suficiente pro
+   texto ler, inclusive no dia em que alguém subir uma foto clara. */
+.fundo-do-sistema::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--app-bg) var(--veu, 42%), transparent);
+}
+
+/* NO PAINEL O VÉU É MAIS FECHADO, e a razão é o que cada tela tem em
+   cima dele. O sistema do cliente abre num relógio e em cartões de vidro: quase
+   todo texto de lá já vem com o próprio fundo, e a arte pode aparecer forte.
+
+   O painel é ferramenta de trabalho. Ele é feito de rótulo de 11px, migalha de
+   navegação e linha de apoio em `--ink-4`, e boa parte disso é texto solto
+   pousado direto na arte. Com 42% de véu, uma única faixa clara do papel de
+   parede apaga uma linha inteira — e quem escolheu a imagem não tem como
+   prever ONDE ela vai clarear atrás de qual rótulo.
+
+   Fechar o véu resolve pra qualquer arte que venha, inclusive uma foto clara,
+   sem tirar a imagem da tela: ela continua inteira, só com o volume mais
+   baixo. */
+html.painel-do-dono {
+  --veu: 62%;
+}
+
+/* A SAUDAÇÃO ATRAVESSA O LOGOTIPO, e é a única linha da tela em que isso
+   acontece: o relógio e os cartões são de vidro e trazem o próprio fundo, mas
+   esta frase é texto solto por cima da arte. Sem o escurecimento redondo que
+   havia atrás (uma sombra preta com forma, que era pior que o problema), a
+   letra dourada passa por baixo das palavras.
+
+   A sombra vai no TEXTO e não atrás dele: ela acompanha o contorno de cada
+   letra, então não existe como mancha na tela — só engrossa a borda das
+   palavras o bastante pra elas se descolarem do que passa por trás. */
+html.tem-fundo-do-sistema .moon-stage p {
+  text-shadow: 0 1px 12px color-mix(in srgb, var(--app-bg) 88%, transparent);
+}
+
+/* Com arte, o brilho padrão SAI. As duas coisas juntas viram borrão cinza por
+   cima do desenho — e a arte do cliente perde justamente onde ela era pra
+   aparecer. */
+html.tem-fundo-do-sistema body::before {
+  display: none;
+}
+
+/* ── O item das colunas laterais ────────────────────────────────────────────
+   Uma peça só, para qualquer coluna lateral do sistema. O ativo leva tinta da
+   marca e barrinha na margem, e não um retângulo cinza cheio (`bg-surface-2`):
+   o cinza cheio tem o mesmo peso do fundo dos cartões da tela, então o menu
+   competiria com o conteúdo e o destaque não se leria como destaque, se leria
+   como mais uma caixa.
+
+   O nome da classe é neutro de propósito. Um nome preso a uma tela faz quem
+   precisa dela noutra achar que está fazendo gambiarra, e o caminho fácil vira
+   copiar o estilo — que é como duas colunas do mesmo sistema divergem.
+
+   O ativo ganha a cor da MARCA em tinta, e uma barrinha na borda esquerda. A
+   barrinha é o que a coluna tem e o dock não: numa lista vertical o olho corre
+   pela margem, e um traço nela é encontrado antes de qualquer preenchimento. */
+.item-da-coluna {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 10px;
+  padding: 7px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.006em;
+  color: var(--ink-3);
+  white-space: nowrap;
+  transition:
+    color var(--t-rapido) var(--ease-ios),
+    background-color var(--t-rapido) var(--ease-ios);
+}
+
+.item-da-coluna:hover {
+  color: var(--ink);
+  background: color-mix(in oklab, var(--ink) 6%, transparent);
+}
+
+.item-da-coluna[aria-current='page'] {
+  color: var(--ink);
+  background: color-mix(in oklab, var(--accent) 14%, transparent);
+}
+
+/* Mesma razão da aba do topo: a marca fica na pastilha, a legibilidade no
+   texto. Texto e fundo no mesmo matiz derrubam o contraste justamente no item
+   que precisa se destacar. */
+.dark .item-da-coluna[aria-current='page'] {
+  background: color-mix(in oklab, var(--accent) 22%, transparent);
+}
+
+/* A barrinha na margem. Só no item ativo, e só quando o menu está aberto:
+   recolhido, a coluna tem 56px e um traço colado na borda esquerda encostaria
+   no ícone. */
+.item-da-coluna[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  height: 16px;
+  width: 2.5px;
+  border-radius: 2px;
+  background: var(--accent);
+  transform: translateY(-50%);
+}
+
+/* ── A logo do cliente no fundo do sistema ──────────────────────────────────────
+   Fica numa camada FIXA em z-index -1, no mesmo plano do brilho do app
+   (body::before) e logo acima dele. É o que faz o vidro das telas desfocar a
+   marca junto com o resto do fundo, em vez de ela ficar chapada por cima.
+
+   Três decisões:
+
+     A MÁSCARA TIRA O MEIO. `mask-image` deixa a marca aparecer nas bordas e a
+     apaga no centro, que é exatamente onde o texto das telas mora. Sem isso a
+     logo passa por baixo de tabela e formulário e briga com a leitura, que é
+     o motivo de marca-d'água ser quase sempre má ideia.
+
+     OPACIDADE DE FUNDO, NÃO DE ELEMENTO. 5% no claro e 7% no escuro: no
+     escuro a mesma opacidade some, porque o contraste contra #0a0a0c é menor.
+
+     ELA ANDA. Uma deriva de 100 segundos, quase imperceptível quadro a
+     quadro, mas o suficiente pra tela nunca estar completamente parada. */
+.fundo-da-marca {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--marca), var(--marca), var(--marca);
+  background-repeat: no-repeat;
+  /* Sangram pelas bordas de propósito: marca inteira e centrada no canto vira
+     adesivo. Cortada pela borda, ela lê como material da página. */
+  background-position:
+    -4% 82%,
+    104% 20%,
+    62% 106%;
+  background-size:
+    34vmax,
+    27vmax,
+    30vmax;
+  /* A silhueta escura sobre o claro pesa mais que a clara sobre o escuro na
+     mesma opacidade — é por isso que os dois números não são o mesmo. */
+  opacity: 0.065;
+  /* A LOGO ENTRA COMO FORMA, NÃO COMO IMAGEM.
+     `brightness(0)` achata qualquer cor em preto sem tocar no canal alfa, e o
+     que sobra é a silhueta. A primeira versão usava a arte como ela é, e a
+     conta não fecha: logo preta sobre o tema escuro é invisível, logo branca
+     sobre o tema claro também. E como a marca é de quem chega, não dá pra
+     supor de que cor ela vem. Silhueta neutra funciona pras duas, e ainda é o
+     que uma marca-d'água sempre foi. */
+  filter: brightness(0);
+  mask-image: radial-gradient(88% 72% at 50% 46%, transparent 0%, transparent 22%, #000 66%);
+  -webkit-mask-image: radial-gradient(88% 72% at 50% 46%, transparent 0%, transparent 22%, #000 66%);
+  animation: marca-deriva 100s var(--ease-suave) infinite alternate;
+}
+
+.dark .fundo-da-marca {
+  /* Mesma silhueta, invertida: no escuro ela precisa ser clara pra existir.
+     `invert(1)` vem DEPOIS do brightness e não mexe no alfa, então o recorte
+     da logo continua o mesmo. */
+  filter: brightness(0) invert(1);
+  opacity: 0.12;
+}
+
+@keyframes marca-deriva {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(-1.6%, 1.2%, 0) scale(1.05);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fundo-da-marca {
+    animation: none;
+  }
+}
+
+/* Tipografia de display no registro da Apple: SF quando existe, tracking
+   negativo e peso médio — nunca bold gritado. */
+.display-type {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+  letter-spacing: -0.032em;
+  font-weight: 600;
+}
+
+/* Aviso de resultado (src/components/ui/Toast.tsx): sobe da borda de baixo. */
+.toast-in {
+  animation: toast-in 260ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Entrada suave e escalonada; o índice vem inline. */
+.rise-in {
+  animation: rise-in 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Controle deslizante ────────────────────────────────────────────────────
+   O range do navegador é o controle mais cru que sobrou na tela: trilho
+   grosso, quadrado, com a cor do sistema. Aqui ele vira um fio fino que se
+   pinta de accent até onde o valor chegou, com um pino que cresce ao passar
+   o mouse e ganha um halo quando está sendo arrastado.
+
+   A porcentagem preenchida entra por `--fill` no style — o Chrome não sabe
+   pintar só um lado do trilho sozinho (o Firefox sabe, e usa ::-moz-range-
+   progress logo abaixo). */
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 18px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--accent) 0%,
+    var(--accent) var(--fill, 50%),
+    var(--line-strong) var(--fill, 50%),
+    var(--line-strong) 100%
+  );
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 13px;
+  width: 13px;
+  margin-top: -4.5px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 1px 3px rgba(15, 21, 32, 0.28);
+  transition:
+    transform 160ms cubic-bezier(0.32, 0.72, 0, 1),
+    box-shadow 160ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.slider:hover::-webkit-slider-thumb {
+  transform: scale(1.2);
+}
+
+.slider:active::-webkit-slider-thumb {
+  transform: scale(1.3);
+  box-shadow:
+    0 1px 3px rgba(15, 21, 32, 0.28),
+    0 0 0 6px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.slider:focus-visible::-webkit-slider-thumb {
+  box-shadow:
+    0 1px 3px rgba(15, 21, 32, 0.28),
+    0 0 0 5px color-mix(in srgb, var(--accent) 32%, transparent);
+}
+
+.slider::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line-strong);
+}
+
+.slider::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.slider::-moz-range-thumb {
+  height: 13px;
+  width: 13px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 1px 3px rgba(15, 21, 32, 0.28);
+  transition: transform 160ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.slider:hover::-moz-range-thumb {
+  transform: scale(1.2);
+}
+
+/* ── Abas com indicador que desliza ─────────────────────────────────────────
+   O fundo da aba ativa não pisca de um lugar pro outro: é UM retângulo só,
+   que escorrega até a aba escolhida. A posição vem medida em JS
+   (src/components/ui/SegmentedTabs.tsx); daqui sai só o movimento. */
+.seg-pill {
+  transition:
+    transform 340ms cubic-bezier(0.32, 0.72, 0, 1),
+    width 340ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* Antes da primeira medida o indicador não tem lugar nenhum — deslizar do
+   canto esquerdo até a aba certa, no primeiro quadro, pareceria defeito. */
+.seg-pill-quieto {
+  transition: none;
+}
+
+/* Botão que responde ao dedo: afunda um tiquinho ao ser pressionado. */
+.press {
+  transition:
+    transform var(--t-toque) var(--ease-ios),
+    background-color 160ms var(--ease-ios),
+    color 160ms var(--ease-ios),
+    border-color 160ms var(--ease-ios),
+    opacity 160ms var(--ease-ios);
+}
+
+.press:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+/* ── A tela que troca ───────────────────────────────────────────────────────
+   Navegar entre telas trocava o conteúdo num quadro só: o painel sumia e a
+   lista de clientes já estava lá, sem nada dizendo que a página mudou. O
+   deslize curto de 8px é o que dá a leitura de "isto é outra coisa" sem virar
+   apresentação de slides — a chave é ser rápido e vir de POUCO longe.
+
+   Só desce (não sobe): conteúdo que entra vindo de baixo é o gesto de folha
+   nova; vindo de cima parece que algo caiu. */
+/* `backwards` E NÃO `both`, e isto vale um parágrafo porque o efeito colateral
+   era invisível e grave.
+
+   `both` mantém o último quadro da animação aplicado PARA SEMPRE — inclusive o
+   `transform: translateY(0)`, que não muda nada visualmente e muda tudo no
+   layout: um elemento com `transform` vira containing block de todo descendente
+   `position: fixed`. Ou seja, todo modal, menu e aviso do painel passava a se
+   posicionar em relação a esta div em vez da janela.
+
+   Na tela de Clientes isso deixava o modal de excluir com 495px de altura
+   dentro de uma "janela" de 320px: o cabeçalho e o começo do texto ficavam
+   cortados acima do topo, e a pessoa via um diálogo pela metade, sem título.
+
+   `backwards` mantém só o PRIMEIRO quadro antes de a animação começar, que é o
+   que impede o flash de conteúdo já posicionado. Terminada a animação, o
+   elemento volta ao estado natural — que é idêntico ao último quadro (sem
+   deslocamento) — e o transform some junto com o problema. */
+/* SÓ TRANSFORM. NUNCA OPACIDADE. É a MESMA regra que já valia pro dock (ver
+   `dock-entra`), e a falta dela aqui produzia o defeito mais visível do painel:
+   ao trocar de tela, a página abria SEM VIDRO NENHUM por um quarto de segundo
+   e só depois o vidro entrava de uma vez. Duas aparências pra mesma tela, uma
+   substituindo a outra na frente de quem olha.
+
+   A causa não é o vidro, é esta animação. Opacidade abaixo de 1 cria uma RAIZ
+   DE FUNDO: a partir dali, todo `backdrop-filter` de dentro passa a enxergar só
+   o que está DENTRO do elemento animado — ou seja, nada. E como esta div
+   embrulha a tela inteira, "nada" era o fundo de TODOS os cartões, barras e
+   campos da página ao mesmo tempo. No primeiro quadro em que a opacidade chega
+   a 1 exato, o navegador descarta a camada composta e o vidro aparece: é o
+   estalo que se via.
+
+   Transform não cria raiz de fundo. O deslize sozinho dá a mesma leitura de
+   "isto é outra coisa", e agora a tela nasce com o material definitivo. */
+.tela-entra {
+  animation: tela-entra var(--t-tela) var(--ease-suave) backwards;
+}
+
+@keyframes tela-entra {
+  from {
+    transform: translateY(10px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* ── Cascata ────────────────────────────────────────────────────────────────
+   Os filhos diretos entram um atrás do outro, com 45ms de diferença. É o que
+   transforma uma grade de cartões que "aparece" numa grade que se MONTA, e
+   custa uma classe no pai em vez de um índice inline em cada filho.
+
+   Para no décimo: além disso o último cartão esperaria meio segundo pra
+   existir, e espera por enfeite é espera. */
+/* `backwards` pelo mesmo motivo do `.tela-entra`: com `both`, cada cartão da
+   grade ficava com um transform permanente e virava containing block de
+   qualquer `fixed` dentro dele. */
+.cascata > * {
+  animation: tela-entra 380ms var(--ease-suave) backwards;
+}
+
+.cascata > *:nth-child(1) { animation-delay: 0ms; }
+.cascata > *:nth-child(2) { animation-delay: 45ms; }
+.cascata > *:nth-child(3) { animation-delay: 90ms; }
+.cascata > *:nth-child(4) { animation-delay: 135ms; }
+.cascata > *:nth-child(5) { animation-delay: 180ms; }
+.cascata > *:nth-child(6) { animation-delay: 225ms; }
+.cascata > *:nth-child(7) { animation-delay: 270ms; }
+.cascata > *:nth-child(8) { animation-delay: 315ms; }
+.cascata > *:nth-child(9) { animation-delay: 360ms; }
+.cascata > *:nth-child(n + 10) { animation-delay: 400ms; }
+
+/* A mesma entrada da `.cascata`, mas como classe SOLTA.
+   `.cascata > *` depende de ser filho direto e de nth-child, o que não serve
+   pra lista renderizada em laço onde o atraso vem do índice do dado (a grade do
+   perfil, o feed). Aqui quem põe o `animation-delay` é o componente. */
+/* `backwards`, e não `both`, pelos dois motivos já anotados acima: `forwards`
+   deixaria um transform grudado pra sempre (containing block de qualquer
+   `fixed` de dentro) sem ganho nenhum, já que o último quadro é idêntico ao
+   estado natural. `backwards` é o que importa aqui: ele segura o primeiro
+   quadro durante o `animation-delay` que o componente escreve inline. */
+.cascata-item {
+  animation: tela-entra 380ms var(--ease-suave) backwards;
+}
+
+/* Peça que sobe ao passar o mouse. Vale pra cartão clicável: o movimento diz
+   que aquilo é um objeto e não um retângulo pintado. A sombra cresce junto,
+   senão a peça sobe sem se descolar de nada. */
+.eleva {
+  transition:
+    transform var(--t-rapido) var(--ease-ios),
+    box-shadow var(--t-rapido) var(--ease-ios),
+    border-color var(--t-rapido) var(--ease-ios);
+}
+
+.eleva:hover {
+  transform: translateY(-2px);
+}
+
+/* ── GRÁFICO QUE SE DESENHA AO ENTRAR ─────────────────────────────────────
+
+   Um gráfico que já chega pronto é um retângulo colorido: o olho não segue
+   nada e a leitura fica pro momento em que a pessoa decidir prestar atenção.
+   Desenhando, ele conduz a leitura na direção certa — a linha da esquerda pra
+   direita, a barra de baixo pra cima, a rosca no sentido do relógio.
+
+   `--tam` é o comprimento do traço. Quem desenha caminho longo deve passar
+   `pathLength={1}` no <path> e `--tam: 1`: com isso o SVG normaliza o
+   comprimento e o tracejado cobre a curva inteira, qualquer que seja o tamanho
+   real dela.
+
+   Sem isso, o alternativo de 200 unidades REPETE ao longo de um caminho de mil,
+   e a linha aparece cheia de furos regulares — que parecem falha de dado e não
+   são. Foi o que aconteceu no gráfico de engajamento. */
+.linha-desenha {
+  stroke-dasharray: var(--tam, 200);
+  stroke-dashoffset: var(--tam, 200);
+  animation: risca 900ms var(--ease-suave) 120ms forwards;
+}
+
+@keyframes risca {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.linha-preenche {
+  animation: surge 700ms var(--ease-suave) 380ms both;
+}
+
+.ponto-surge {
+  animation: ponto-surge 320ms var(--ease-ios) 900ms both;
+}
+
+@keyframes ponto-surge {
+  from {
+    r: 0;
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes surge {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* A barra cresce do chão. `transform-origin` embaixo, e não escala de altura:
+   escalar `height` obriga o navegador a refazer o layout a cada quadro, e com
+   uma dúzia de barras isso engasga em máquina modesta. */
+.barra-cresce {
+  transform-origin: bottom;
+  animation: barra-cresce 620ms var(--ease-suave) both;
+}
+
+@keyframes barra-cresce {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* A rosca se fecha no sentido do relógio. Mesma técnica da linha, e o
+   componente põe `--tam` com a circunferência real de cada fatia. */
+.fatia-desenha {
+  stroke-dasharray: var(--tam);
+  stroke-dashoffset: var(--tam);
+  animation: risca 800ms var(--ease-suave) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Movimento na tela causa enjoo de verdade em parte das pessoas. Aqui os
+     gráficos aparecem inteiros em vez de se desenharem — o dado é o mesmo. */
+  .linha-desenha,
+  .fatia-desenha {
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+  .linha-preenche,
+  .ponto-surge,
+  .barra-cresce {
+    animation: none;
+  }
+  .rise-in {
+    animation: none;
+  }
+  .toast-in {
+    animation: none;
+  }
+  .tela-entra,
+  .cascata > *,
+  .cascata-item {
+    animation: none;
+  }
+  .eleva:hover {
+    transform: none;
+  }
+  .glass-chip:hover {
+    transform: none;
+  }
+  .seg-pill {
+    transition: none;
+  }
+  .press:active:not(:disabled) {
+    transform: none;
+  }
+  .slider::-webkit-slider-thumb,
+  .slider::-moz-range-thumb {
+    transition: none;
+  }
+  .slider:hover::-webkit-slider-thumb,
+  .slider:active::-webkit-slider-thumb,
+  .slider:hover::-moz-range-thumb {
+    transform: none;
+  }
+}
+
+/* ── Loader de IA (src/components/ui/ai-loader.tsx) ─────────────────────────
+   O anel é uma esfera de luz: o box-shadow mora DENTRO do círculo e gira,
+   então a cor parece nascer atrás da palavra. O tamanho vem da variável
+   --ai-loader-size, que o componente define por prop. */
+.loader-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ai-loader-size, 200px);
+  height: var(--ai-loader-size, 200px);
+  border-radius: 50%;
+  font-size: 1.125rem;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  color: #fff;
+  user-select: none;
+}
+
+.loader-label {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+}
+
+.loader {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 50%;
+  animation: loader-rotate 2s linear infinite;
+}
+
+.loader-letter {
+  display: inline-block;
+  opacity: 0.55;
+  /* a esfera acesa passa por trás da palavra; a sombra segura o contraste
+     no ponto mais claro da volta */
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+  animation: loader-letter-anim 2s infinite;
+  /* o atraso de cada letra vem inline, calculado pelo índice */
+}
+
+@keyframes loader-rotate {
+  0% {
+    transform: rotate(90deg);
+    box-shadow:
+      0 10px 20px 0 #fff inset,
+      0 20px 30px 0 #ad5fff inset,
+      0 60px 60px 0 #471eec inset;
+  }
+  50% {
+    transform: rotate(270deg);
+    box-shadow:
+      0 10px 20px 0 #fff inset,
+      0 20px 10px 0 #d60a47 inset,
+      0 40px 60px 0 #311e80 inset;
+  }
+  100% {
+    transform: rotate(450deg);
+    box-shadow:
+      0 10px 20px 0 #fff inset,
+      0 20px 30px 0 #ad5fff inset,
+      0 60px 60px 0 #471eec inset;
+  }
+}
+
+@keyframes loader-letter-anim {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: translateY(0);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  40% {
+    opacity: 0.78;
+    transform: translateY(0);
+  }
+}
+
+/* Quem pediu menos movimento no sistema continua vendo que algo está em
+   andamento — o anel fica aceso e parado, sem girar nem pulsar. */
+@media (prefers-reduced-motion: reduce) {
+  .loader {
+    animation: none;
+    box-shadow:
+      0 10px 20px 0 #fff inset,
+      0 20px 30px 0 #ad5fff inset,
+      0 60px 60px 0 #471eec inset;
+  }
+  .loader-letter {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ── Construtor de fluxos ────────────────────────────────────────────────── */
+
+/* O tracejado que corre enquanto uma ligação está sendo feita. É o que
+   diferencia a linha provisória (viva, andando) das ligações já criadas
+   (paradas): sem o movimento, as duas ficavam iguais na tela. */
+@keyframes correr-tracejado {
+  to {
+    stroke-dashoffset: -13;
+  }
+}
+
+/* Pulso na saída escolhida. Marca de ONDE a ligação vai sair, quando o cursor
+   já se afastou do bloco e a linha some da vista. */
+@keyframes pulso-da-saida {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 55%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 5px color-mix(in oklab, var(--accent) 0%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Quem pediu menos movimento não perde a informação: a linha e a saída
+     continuam destacadas pela cor, só param de se mexer. */
+  .animate-\[correr-tracejado_\.6s_linear_infinite\],
+  .animate-\[pulso-da-saida_1\.4s_ease-in-out_infinite\] {
+    animation: none !important;
+  }
+}
+
+/* ── A partida de um fluxo (src/components/crm/chat/FluxoIniciando.tsx) ──────
+   O aviso de que o fluxo começou naquela pessoa. Ele fica na tela por vários
+   segundos — a espera real é o robô pegar o fluxo —, e um giro parado nesse
+   tempo todo parece travado, não ocupado.
+
+   São três movimentos, e cada um diz uma coisa diferente:
+   a barra corre (está andando), o anel pulsa (ainda estamos esperando), e o
+   cartão entra deslizando (isto é novo, olhe aqui). */
+
+.partida-entra {
+  animation: partida-entra 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes partida-entra {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* A barra indeterminada: um trecho de luz que atravessa o trilho. Indeterminada
+   de propósito — não dá pra saber QUANTO falta pro robô pegar, e uma barra que
+   fingisse porcentagem estaria inventando um número. */
+.partida-barra::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: partida-correr 1.15s ease-in-out infinite;
+}
+
+@keyframes partida-correr {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(350%);
+  }
+}
+
+/* O anel que respira em volta do ícone enquanto se espera. */
+.partida-anel {
+  animation: partida-anel 1.8s ease-in-out infinite;
+}
+
+@keyframes partida-anel {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 45%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 7px color-mix(in oklab, var(--accent) 0%, transparent);
+  }
+}
+
+/* O visto que aparece quando o fluxo pega: cresce uma vez e para.
+
+   Sem o pulinho elástico que tinha antes (cubic-bezier com 1.56 de overshoot):
+   coisa de verdade desacelera, não quica. A curva abaixo é desaceleração forte
+   no fim, que dá a mesma sensação de "chegou" sem o ar de banner animado. */
+.partida-pronto {
+  animation: partida-pronto 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes partida-pronto {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Sem movimento, a informação continua: o texto diz em que pé está e a cor
+     separa esperando de pronto. O que some é só o balanço. */
+  .partida-entra,
+  .partida-barra::after,
+  .partida-anel,
+  .partida-pronto {
+    animation: none !important;
+  }
+  .partida-barra::after {
+    width: 100%;
+    opacity: 0.5;
+  }
+}
+
+/* ── O "pensando" da conversa com o Claude ──────────────────────────────────
+   Três pontos fora de fase e um brilho lento no ícone. Enquanto a resposta não
+   chega isto é a única coisa viva na tela, e precisa dizer duas coisas ao mesmo
+   tempo: que o pedido saiu, e que ainda não voltou. */
+@keyframes pensando-sobe {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+.pensando-ponto {
+  animation: pensando-sobe 1.15s ease-in-out infinite;
+}
+
+@keyframes pensando-respira {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+.pensando-brilho {
+  animation: pensando-respira 1.8s ease-in-out infinite;
+}
+
+/* Quem pediu menos movimento no sistema recebe o estado, sem a dança. */
+@media (prefers-reduced-motion: reduce) {
+  .pensando-ponto,
+  .pensando-brilho {
+    animation: none;
+    opacity: 0.8;
+  }
+}
+
+/* ── Modo gravação ────────────────────────────────────────────────────────
+   Esconde o que identifica uma pessoa ou abre uma porta (e-mail, telefone,
+   chave, valor de contrato) pra dar pra gravar demonstração e compartilhar
+   tela sem vazar dado de cliente.
+
+   Não é criptografia: o texto continua no DOM e quem abrir o inspetor lê. Isto
+   protege contra a CÂMERA, não contra quem está no controle da máquina. */
+
+.so-gravando {
+  display: none;
+}
+
+html.gravando .so-gravando {
+  display: inline;
+}
+
+html.gravando .so-normal {
+  display: none;
+}
+
+html.gravando .sensivel {
+  /* 7px é grande o bastante pra não voltar a ser legível quando alguém amplia
+     o vídeo. Borrão de 2 ou 3px vira texto de novo num zoom. */
+  filter: blur(7px);
+  /* Sem isto o borrão some no primeiro clique e a seleção revela o texto. */
+  user-select: none;
+  pointer-events: none;
+  /* O borrão sangra pra fora da caixa e encosta no que está do lado. */
+  border-radius: 4px;
+}
+
+/* O borrão custa caro em lista longa: numa tabela de conversas são centenas de
+   camadas de filtro. Em telas que pedem menos movimento, e em impressão, o
+   dado é escondido sem o custo do desfoque. */
+@media print {
+  html.gravando .sensivel {
+    filter: none;
+    color: transparent;
+    background: currentColor;
+    opacity: 0.25;
+  }
+}
+
+/* ── O símbolo da CRM ───────────────────────────────────────────────────
+   A arte é branca e vazada, sem fundo. Do jeito que ela é, aparece no escuro
+   e SOME no claro — branco sobre branco.
+
+   Em vez de pôr uma moldura por baixo (que engorda a marca e não é como ela
+   se apresenta), a própria arte inverte no tema claro: `invert(1)` troca o
+   branco por preto e não toca no canal alfa, então o fundo continua
+   transparente e o contorno continua limpo. */
+html:not(.dark) .marca-crm {
+  filter: invert(1);
+}
+
+/* ── A tipografia da CRM ────────────────────────────────────────────────
+   Outfit, e só ela.
+
+   A NewBlack (a fonte das peças da marca) foi descartada de propósito: além de
+   exigir uma licença webfont à parte, ela é uma DISPLAY — desenhada pra
+   manchete e cartaz, que é onde ela brilha. Num painel o texto é outro:
+   tabela densa, rótulo de 11px, número alinhado, coluna estreita. Display
+   nesse tamanho cansa e confunde caractere parecido.
+
+   A Outfit tem a mesma construção geométrica (circular, aberta), é OFL —
+   livre pra uso comercial, inclusive web — e é VARIÁVEL: um arquivo de 14 KB
+   cobre 100 a 900. Quatro arquivos estáticos pesariam quatro vezes mais e
+   ainda dariam menos pesos.
+
+   A licença mora em public/fontes/Outfit-OFL.txt: a OFL exige que ela
+   acompanhe a fonte, e um arquivo que some numa faxina é uma violação.
+
+   `font-display: swap` porque o contrário é pior: com `block` o texto fica
+   INVISÍVEL enquanto a fonte carrega, e numa conexão ruim isso é um painel
+   em branco por segundos. */
+@font-face {
+  font-family: 'Outfit';
+  src: url('/fontes/Outfit-Variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── O mapa da busca de leads ─────────────────────────────────────────────────
+   O Leaflet chega com estilo próprio, feito pra um mapa solto numa página
+   branca. Aqui ele mora dentro do painel escuro.
+
+   1. O MAPA É CLARO, e essa é a mudança recente. Ele passou um tempo invertido
+      (`invert(1) hue-rotate(180deg)`) pra combinar com o painel: a inversão
+      escurecia o papel e o giro de 180° trazia as cores de volta, senão o verde
+      do parque vira rosa e a água vira laranja.
+
+      Combinava e custava caro. O giro de matiz acerta o VERDE e o AZUL de
+      volta, e erra em todo o resto: rodovia amarela vira azulada, área urbana
+      bege vira cinza-lilás, e o nome da rua fica em cinza claro sobre cinza
+      médio, que é o pior contraste do conjunto. Num mapa que existe pra
+      RECONHECER lugar e LER nome de bairro, isso é o oposto do que ele
+      precisa. Um mapa é uma janela, não um painel: ele pode ser claro dentro
+      de uma tela escura, como é em qualquer aplicativo de mapa.
+
+   2. E POR ISSO ELE LEVA A PALETA CLARA JUNTO (ver `.mapa-claro`). Tirar só o
+      filtro deixaria o resto invisível: os controles de zoom são
+      `--surface-2` com texto `--ink-2`, que no painel escuro são branco sobre
+      branco; a atribuição é `--ink-4`, cinza claro; e a tarja de instrução que
+      flutua por cima é a mesma coisa. Sem isso o mapa clareia e os comandos
+      dele somem.
+
+   3. A COR DO ALFINETE E DO CÍRCULO vem daqui, não do SVG. Atributo de
+      apresentação de SVG não resolve `var()`, então `fill="var(--accent)"`
+      sairia preto. Como CSS ganha de atributo de apresentação, declarar aqui
+      resolve os dois casos de uma vez. A cor continua sendo a do painel, e ela
+      sempre lê sobre papel branco: a leitura do papel de parede garante que o
+      acento seja escuro o bastante pra sustentar texto branco (ver `ajustar`
+      em coresDaImagem.ts), e o que serve pra isso serve pra alfinete no mapa.
+
+   4. OS CONTROLES eram brancos com borda cinza no meio do vidro. */
+
+/* A ILHA CLARA. Vale pro mapa E pra tarja que flutua por cima dele, que é irmã
+   e não filha — por isso a classe fica no invólucro dos dois, e não no mapa.
+
+   São os mesmos valores do tema claro do app (:root), copiados e não referidos:
+   `var()` aqui buscaria o valor do tema em vigor, que é o escuro, e a conta
+   voltaria ao começo. */
+.mapa-claro {
+  --canvas: rgba(15, 21, 32, 0.045);
+  --surface: rgba(255, 255, 255, 0.86);
+  --surface-2: rgba(15, 21, 32, 0.05);
+  --line: rgba(15, 21, 32, 0.1);
+  --line-soft: rgba(15, 21, 32, 0.055);
+  --line-strong: rgba(15, 21, 32, 0.18);
+  --ink: #0f1520;
+  --ink-2: #3f4a5a;
+  --ink-3: #6b7787;
+  --ink-4: #98a2b1;
+}
+
+.mapa-crm {
+  background: var(--canvas);
+  /* A borda some e vira sombra: o mapa passa a parecer uma superfície
+     apoiada na página, não uma figura dentro de uma moldura. */
+  box-shadow:
+    0 0 0 1px var(--line),
+    0 16px 40px -24px rgba(0, 0, 0, 0.55);
+}
+
+.mapa-crm .leaflet-container {
+  font-family: inherit;
+  /* O cursor diz o que o clique faz. Numa tela onde clicar MARCA (e não
+     arrasta só), a mãozinha padrão do Leaflet mentia sobre a ação. */
+  cursor: crosshair;
+}
+
+.mapa-crm .leaflet-container:active {
+  cursor: grabbing;
+}
+
+.alfinete-corpo {
+  fill: var(--accent);
+  stroke: rgba(255, 255, 255, 0.8);
+  stroke-width: 1.5;
+}
+
+.alfinete-numero {
+  fill: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  font-family: inherit;
+}
+
+/* O alfinete é clicável (clicar remove), então ele reage ao ponteiro. */
+.alfinete-crm {
+  cursor: pointer;
+  transition: transform 0.14s cubic-bezier(0.32, 0.72, 0, 1);
+  transform-origin: 50% 100%;
+}
+
+.alfinete-crm:hover {
+  transform: scale(1.12);
+}
+
+.circulo-de-busca {
+  stroke: var(--accent);
+  fill: var(--accent);
+}
+
+/* Os controles de zoom: cápsula de vidro, sem a moldura cinza do Leaflet. */
+.mapa-crm .leaflet-control-zoom {
+  border: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px var(--line),
+    0 8px 20px -10px rgba(0, 0, 0, 0.5);
+}
+
+.mapa-crm .leaflet-control-zoom a {
+  background: color-mix(in oklab, var(--surface-2) 92%, transparent);
+  backdrop-filter: blur(12px);
+  color: var(--ink-2);
+  border: 0;
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  font-weight: 500;
+}
+
+.mapa-crm .leaflet-control-zoom a + a {
+  border-top: 1px solid var(--line);
+}
+
+.mapa-crm .leaflet-control-zoom a:hover {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+/* A ATRIBUIÇÃO NÃO USA A TINTA DE APOIO, e não é preciosismo: ela é EXIGÊNCIA
+   DA LICENÇA do OpenStreetMap, então "discreta" não pode virar "ilegível".
+
+   Com `--ink-4` ela ficava em 2,25:1 sobre o papel do mapa, e com `--ink-3` em
+   3,9:1 — as duas abaixo do piso de 4,5 da WCAG, e ainda por cima num texto de
+   10px, que é onde o contraste importa mais, não menos. Enquanto o mapa era
+   invertido isso passava despercebido, porque o filtro também clareava a
+   letra sobre o papel escurecido. */
+.mapa-crm .leaflet-control-attribution {
+  background: color-mix(in oklab, var(--surface-2) 82%, transparent);
+  backdrop-filter: blur(8px);
+  color: var(--ink-2);
+  font-size: 10px;
+  border-radius: 8px 0 0 0;
+  padding: 2px 6px;
+}
+
+.mapa-crm .leaflet-control-attribution a {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+/* Aqui moravam `.pilula-menu`, `.item-menu`, `.rotulo-menu` e `.gaveta-entra`,
+   do menu lateral. O menu virou dock (`.dock-*`, mais acima) e a gaveta do
+   celular deixou de existir junto com a coluna, então as quatro ficaram sem
+   ninguém escrevendo essas classes. */
+
+/* ── A busca ────────────────────────────────────────────────────────────────
+   O campo da barra de cima é um botão, não um input: quem clica cai no painel
+   de busca, que abre no meio da tela por cima de tudo. É a mesma escolha do
+   Spotlight, e ela existe por um motivo prático — o campo da barra tem 300px
+   e a lista de resultado precisa de 600.
+
+   O painel entra descendo E crescendo um tiquinho: as duas juntas dão a
+   impressão de que ele veio de trás da tela, não de fora dela. */
+.paleta-entra {
+  animation: paleta-entra 240ms var(--ease-ios) both;
+  transform-origin: 50% 0;
+}
+
+@keyframes paleta-entra {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.975);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.veu-entra {
+  animation: veu-entra 200ms ease-out both;
+}
+
+@keyframes veu-entra {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* A linha escolhida não pisca de uma pra outra: o fundo desliza, igual ao
+   menu. Aqui ele é um elemento por linha e o movimento vem da cor — medir
+   posição numa lista que rola custaria mais do que entrega. */
+.linha-busca {
+  transition:
+    background-color 120ms var(--ease-ios),
+    color 120ms var(--ease-ios);
+}
+
+/* O grifo do que casou com o que foi digitado. Não é fundo amarelo de
+   marca-texto: é a cor da marca no próprio peso da letra, que é o que a Apple
+   faz no Spotlight e o que continua legível sobre vidro. */
+.grifo {
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .paleta-entra,
+  .veu-entra {
+    animation: none;
+  }
+}
+
+/* O RESPIRO DO DOCK, só onde o dock existe.
+
+   O compositor do chat é o único lugar do módulo que não pode ficar por baixo
+   do vidro: ele não tem pra onde rolar, e meio legível é o pior estado —
+   ninguém percebe que está escrevendo por baixo de alguma coisa.
+
+   Mas o MESMO componente serve o painel (que tem dock flutuante) e o
+   workspace do cliente (que não tem). Fixar a folga no componente daria 104px
+   de espaço morto na tela do cliente, embaixo do campo, sem nada ali. */
+.respiro-do-dock {
+  padding-bottom: 0.75rem;
+}
+
+/* A marca é "o dock está na tela", e não "é o painel": dentro da
+   conversa o dock some, e a folga presa ao painel viraria 104px de nada
+   embaixo do campo de escrever. Ver `semDock` no OwnerLayout. */
+html.com-dock .respiro-do-dock {
+  padding-bottom: 104px;
+}
+
+/* ── O sinal de "está no ar" (a automação) ────────────────────────
+   Uma automação ligada não tem sintoma nenhum: ela fica parada esperando um
+   comentário que pode não chegar hoje. O rótulo "ATIVA" diz o estado, mas não
+   diz que é um estado VIVO — e numa lista de seis o que precisa ser lido de
+   relance é justamente quais estão de pé.
+
+   O ponto pulsa como o LED de um equipamento ligado: a onda sai dele e se
+   dissolve. Desligada não pulsa E fica vermelha, porque uma automação pausada
+   por engano é um post inteiro de gente sem resposta — é alerta, não repouso. */
+.pulso-vivo {
+  animation: pulso-vivo 2.2s var(--ease-ios) infinite;
+}
+
+@keyframes pulso-vivo {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--ok-ink) 60%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 7px color-mix(in oklab, var(--ok-ink) 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--ok-ink) 0%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Quem pediu menos movimento não perde a informação: verde contra vermelho
+     continua dizendo tudo. Só a onda para. */
+  .pulso-vivo {
+    animation: none;
+  }
+}
+
+/* ── O que passa por baixo de um botão flutuante ────────────────────────────
+   O "Salvar" do editor de automação flutua sobre a coluna, e o texto continua
+   rolando por trás dele. O vidro do botão desfoca o pedaço que ele cobre, mas
+   a linha que passa RENTE à borda de cima ficava meio legível — que é o pior
+   estado possível: ninguém percebe que precisa rolar mais.
+
+   A faixa dissolve o conteúdo antes de ele chegar no botão. `--surface-solid`
+   é a versão opaca do mesmo cinza que o vidro produz, e existe nos dois temas,
+   então a faixa some no material da coluna em vez de virar um retângulo. */
+.esbate-para-o-rodape {
+  background: linear-gradient(
+    to top,
+    var(--surface-solid) 0%,
+    color-mix(in oklab, var(--surface-solid) 85%, transparent) 55%,
+    transparent 100%
+  );
+}
+
+/* ── A alça que traz o dock de volta ────────────────────────────────────────
+   VAI PARA O CANTO DIREITO, ENCOSTADA NA BORDA.
+   Centralizada ela ficava exatamente onde o dock estava, no meio do caminho do
+   olho e do mouse: quem escondeu o menu queria aquele espaço livre, e uma
+   pastilha no mesmo lugar devolve o estorvo em tamanho menor. No canto, ela
+   sai da leitura e continua achável, porque a borda da tela para o ponteiro.
+
+   ENCOSTADA MESMO: sem respiro à direita e sem canto arredondado desse lado.
+   Uma pastilha flutuando a 16px da borda lê como peça esquecida; grudada na
+   margem, com o canto reto, lê como aba recolhida, que é o que ela é.
+
+   NADA DE OPACIDADE PARA "SUMIR" MAIS. Opacidade abaixo de 1 cria raiz de
+   fundo e o `backdrop-filter` do vidro passa a enxergar só o que está dentro
+   da peça: a alça viraria um retângulo cinza. O recolhimento é feito por
+   posição e tamanho, que é de graça. */
+.dock-chamar-trilho {
+  width: fit-content;
+  /* Empurra para a direita sem precisar de `position` nem de eixo próprio. */
+  margin-left: auto;
+  margin-right: 0;
+  /* Sobe do rodapé: encostada embaixo, a alça brigava com o rodapé e com a
+     borda do último cartão ao mesmo tempo. */
+  padding: 0 0 28px 16px;
+  pointer-events: auto;
+  /* ENTRA PELO LADO, e não de cima.
+     A alça vem de onde ela está: da borda direita, logo depois de o dock ter
+     corrido para lá. Deslizar de cima daria a ela um movimento que a posição
+     não explica, e movimento sem causa lê como glitch. Só `transform` —
+     opacidade cria raiz de fundo e mata o vidro, pelo mesmo motivo já anotado
+     na entrada do dock.
+
+     A animação fica AQUI e não no vidro porque a saída também precisa morar
+     neste elemento: no mesmo eixo, duas animações em elementos diferentes
+     mediriam 100% de larguras diferentes, e o caminho de ida não bateria com o
+     de volta. */
+  animation: alca-entra 380ms var(--ease-suave) both;
+}
+
+/* DESACELERA PARA ENTRAR, ACELERA PARA SAIR. É a mesma regra do mundo físico
+   que o olho já conhece: o que chega freia até parar, o que vai embora ganha
+   velocidade até sumir. Trocar as curvas faz a peça parecer empurrada. */
+.dock-chamar-trilho-sai {
+  animation: alca-sai 200ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+@keyframes alca-entra {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes alca-sai {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.dock-chamar {
+  width: max-content;
+  /* Reto do lado que encosta, redondo do lado que sobra. */
+  --vidro-raio: 11px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.dock-chamar-linha {
+  padding: 3px;
+}
+
+/* UMA LASCA, NÃO UM BOTÃO.
+   Com 22px de largura ela é mais estreita que a barra de rolagem, e o que
+   sobra em cima do conteúdo é quase nada. A altura de 40px é o que a mão
+   precisa para acertar sem mirar; estreitar isso também transformaria a alça
+   num alvo que exige pontaria. */
+.dock-chamar .dock-item {
+  width: 22px;
+  height: 40px;
+  border-radius: 8px;
+}
+
+.dock-chamar .dock-item:hover {
+  /* Escorrega para dentro, na direção que a seta aponta e para onde o clique
+     leva. O dock levanta 4px no hover; aqui o mesmo gesto acontece no eixo que
+     a peça usa. */
+  transform: translateX(-3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dock-chamar-trilho,
+  .dock-chamar-trilho-sai {
+    animation: none;
+  }
+  .dock-chamar .dock-item:hover {
+    transform: none;
+  }
+}

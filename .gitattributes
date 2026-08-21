@@ -1,0 +1,27 @@
+# FIM DE LINHA, NORMALIZADO.
+#
+# Sem isto, quem clonar no Windows recebe o projeto inteiro convertido para
+# CRLF, e o primeiro commit que essa pessoa fizer aparece como "mudei os 156
+# arquivos" mesmo tendo mexido em um. Em projeto que passa de mão em mão, isso
+# transforma qualquer histórico em ruído.
+#
+# `text=auto eol=lf` guarda tudo com LF no repositório, que é o que Node, Vite e
+# Postgres esperam, e deixa o Git decidir o que fazer na cópia de trabalho.
+* text=auto eol=lf
+
+# Arquivos que o Git não deve tentar converter nunca: são binários, e mexer num
+# byte estraga.
+*.woff2 binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.pdf   binary
+*.mp3   binary
+*.mp4   binary
+*.ogg   binary
+
+# Scripts de shell precisam de LF mesmo no Windows: com CRLF, o interpretador
+# lê o retorno de carro como parte do comando e devolve "not found".
+*.sh text eol=lf

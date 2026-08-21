@@ -1,0 +1,18 @@
+# O que nunca entra no repositório
+.env
+.env.local
+*.env
+
+node_modules/
+dist/
+build/
+
+# Endereço público do túnel: muda a cada reinício, não é configuração
+.tunnel/
+
+# Fotos de tela contêm conversa de cliente de verdade
+.screenshots/
+
+.DS_Store
+Thumbs.db
+*.log

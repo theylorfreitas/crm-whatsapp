@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Troque estes arquivos pelo símbolo da sua marca. São três tamanhos em
+         `public/marca/`: 64 aqui na aba, 256 dentro do app, 512 no README.
+         Um arquivo só, grande, custaria meio megabyte baixado em toda visita
+         para desenhar um quadradinho de 16px na aba. -->
+    <link rel="icon" type="image/png" href="/marca/logo-64.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CRM</title>
+    <script>
+      // Aplica o tema ANTES do primeiro pixel. Se isso rodasse dentro do React,
+      // a página apareceria clara por um quadro antes de virar escura, e esse
+      // lampejo branco na abertura não tem como ser desligado depois.
+      document.documentElement.classList.add('dark')
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
